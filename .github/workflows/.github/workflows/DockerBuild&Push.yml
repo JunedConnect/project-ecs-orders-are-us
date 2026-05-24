@@ -1,0 +1,77 @@
+name: Docker Build & Push
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_choice:
+        description: 'Choose which Docker image to build and push'
+        required: true
+        type: choice
+        options:
+          - api-gateway
+          - dashboard-api
+          - inventory-service
+          - notification-service
+          - order-service
+          - payment-service
+          - scheduler
+          - shipping-service
+          - worker
+      environment:
+        description: 'Choose which environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+    docker-build:
+        runs-on: ubuntu-24.04
+        defaults:
+            run:
+                working-directory: "./services/${{ inputs.image_choice }}"
+        permissions:
+            security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+            id-token: write   # This is required for requesting the JWT
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Login to AWS
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
+                role-session-name: github-actions-session
+                aws-region: eu-west-2
+
+            - name: Login to AWS ECR
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Build
+              run: |
+                docker build -t ${{ inputs.image_choice }} .
+
+            - name: Tagging image to ECR repository
+              run: |
+                docker tag ${{ inputs.image_choice }} ${{ secrets.ECR_REPOSITORY }}/${{ inputs.environment }}-${{ inputs.image_choice }}:${{ github.sha }}
+                docker tag ${{ inputs.image_choice }} ${{ secrets.ECR_REPOSITORY }}/${{ inputs.environment }}-${{ inputs.image_choice }}:latest
+
+            - name: Trivy Scan
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                image-ref: ${{ inputs.image_choice }}
+                severity: 'CRITICAL,HIGH'
+                format: 'sarif'
+                output: 'trivy-results-${{ inputs.image_choice }}-Docker.sarif'
+                exit-code: 0
+      
+            - name: Upload Trivy scan results to GitHub Security tab
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                sarif_file: 'trivy-results-${{ inputs.image_choice }}-Docker.sarif'
+                wait-for-processing: true
+
+            - name: Pushing docker image
+              run: docker push ${{ secrets.ECR_REPOSITORY }}/${{ inputs.environment }}-${{ inputs.image_choice }} --all-tags

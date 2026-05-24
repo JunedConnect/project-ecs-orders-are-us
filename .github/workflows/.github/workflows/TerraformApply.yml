@@ -1,0 +1,49 @@
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Choose which environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+# on:
+#     push:
+#         branches:
+#             - dev
+
+
+jobs:
+    terraformapply:
+        runs-on: ubuntu-24.04
+        defaults:
+            run:
+                working-directory: "./terraform/deployment/environments/${{ inputs.environment }}"
+        permissions:
+          id-token: write   # This is required for requesting the JWT
+    
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Login to AWS
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: ${{ vars.AWS_GITHUB_ROLE_ARN }}
+                role-session-name: github-actions-session
+                aws-region: eu-west-2
+
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: 1.11.1
+
+            - name: Terraform Init
+              run: terraform init
+
+            - name: Terraform Apply
+              run: terraform apply -var-file="${{ inputs.environment }}.tfvars" -auto-approve
