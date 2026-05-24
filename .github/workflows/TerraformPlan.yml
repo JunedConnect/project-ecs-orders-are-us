@@ -31,6 +31,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
+            - name: debug - list env dir
+              run: |
+                pwd
+
             - name: Login to AWS
               uses: aws-actions/configure-aws-credentials@v4
               with:
