@@ -22,7 +22,7 @@ jobs:
         runs-on: ubuntu-24.04
         defaults:
             run:
-                working-directory: "./terraform/deployment/environments/${{ inputs.environment }}"
+                working-directory: "terraform/deployment/environments/${{ inputs.environment }}"
         permissions:
             security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
             id-token: write   # This is required for requesting the JWT
