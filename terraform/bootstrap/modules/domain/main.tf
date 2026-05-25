@@ -14,7 +14,7 @@ data "cloudflare_zone" "domain" {
 }
 
 resource "cloudflare_dns_record" "domain" {
-  for_each  = toset(aws_route53_zone.this.name_servers)
+  for_each = toset(aws_route53_zone.this.name_servers)
 
   zone_id = data.cloudflare_zone.domain.id
   name    = var.route53_domain_name
