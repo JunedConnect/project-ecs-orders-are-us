@@ -1,0 +1,22 @@
+# General
+aws_tags = {
+  Environment = "prod"
+  Project     = "orders-are-us"
+  Owner       = "juned"
+  Terraform   = "true"
+}
+
+cloudflare_domain_name = "juned.co.uk"
+route53_domain_name    = "prod.juned.co.uk"
+
+ecr_services = [
+  "api-gateway",
+  "dashboard-api",
+  "inventory-service",
+  "notification-service",
+  "order-service",
+  "payment-service",
+  "scheduler",
+  "shipping-service",
+  "worker",
+]
