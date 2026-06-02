@@ -21,6 +21,8 @@ WORKDIR /app
 
 COPY --from=build /app/dashboard-api ./
 
+RUN apk add --no-cache aws-cli
+
 RUN adduser -D dockeruser
 
 RUN chown -R dockeruser .

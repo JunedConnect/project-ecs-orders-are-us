@@ -19,6 +19,8 @@ WORKDIR /app
 
 COPY --from=build /app/scheduler ./
 
+RUN apk add --no-cache aws-cli
+
 RUN adduser -D dockeruser
 
 RUN chown -R dockeruser .
