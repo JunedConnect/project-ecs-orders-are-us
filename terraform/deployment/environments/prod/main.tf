@@ -4,20 +4,14 @@ module "alb" {
   certificate_arn   = module.route53.certificate_arn
   public-subnet-ids = module.vpc.public-subnet-ids
 
-  environment             = var.aws-tags["Environment"]
-  alb_internal            = var.alb_internal
-  alb_load_balancer_type  = var.alb_load_balancer_type
-  listener_port_http      = var.listener_port_http
-  listener_protocol_http  = var.listener_protocol_http
-  listener_port_https     = var.listener_port_https
-  listener_protocol_https = var.listener_protocol_https
+  environment = var.aws-tags["Environment"]
 
   vpc_id = module.vpc.vpc_id
 
-  target_group_health_check_path = var.target_group_health_check_path
-  target_group_protocol          = var.target_group_protocol
-  target_group_target_type       = var.target_group_target_type
-  api_gateway_container_port     = var.api_gateway_container_port
+  api_gateway_target_group_health_check_path = var.api_gateway_target_group_health_check_path
+  api_gateway_listener_path_patterns         = var.api_gateway_listener_path_patterns
+  dashboard_target_group_health_check_path   = var.dashboard_target_group_health_check_path
+  dashboard_listener_path_patterns           = var.dashboard_listener_path_patterns
 }
 
 module "ecs" {
@@ -33,14 +27,37 @@ module "ecs" {
   ecs_scheduling_strategy           = var.ecs_scheduling_strategy
   ecs_task_requires_compatibilities = var.ecs_task_requires_compatibilities
   ecs_network_mode                  = var.ecs_network_mode
+  ecs_task_cpu                      = var.ecs_task_cpu
+  ecs_task_memory                   = var.ecs_task_memory
+  enable_execute_command            = var.enable_execute_command
   target_group_arn                  = module.alb.target_group_arn
+  dashboard_target_group_arn        = module.alb.dashboard_target_group_arn
+  rds_connection_url                = module.rds.connection_url
+  elasticache_address               = module.elasticache.address
+  sqs_queue_url                     = module.sqs.main_queue_url
+  sqs_main_queue_arn                = module.sqs.main_queue_arn
 
   # API Gateway config
-  api_gateway_image          = var.api_gateway_image
-  api_gateway_cpu            = var.api_gateway_cpu
-  api_gateway_memory         = var.api_gateway_memory
-  api_gateway_container_port = var.api_gateway_container_port
-  api_gateway_desired_count  = var.api_gateway_desired_count
+  api_gateway_image         = var.api_gateway_image
+  api_gateway_desired_count = var.api_gateway_desired_count
+  api_gateway_jwt_secret    = var.api_gateway_jwt_secret
+
+  dashboard_api_image                = var.dashboard_api_image
+  dashboard_api_desired_count        = var.dashboard_api_desired_count
+  inventory_service_image            = var.inventory_service_image
+  inventory_service_desired_count    = var.inventory_service_desired_count
+  notification_service_image         = var.notification_service_image
+  notification_service_desired_count = var.notification_service_desired_count
+  order_service_image                = var.order_service_image
+  order_service_desired_count        = var.order_service_desired_count
+  payment_service_image              = var.payment_service_image
+  payment_service_desired_count      = var.payment_service_desired_count
+  scheduler_image                    = var.scheduler_image
+  scheduler_desired_count            = var.scheduler_desired_count
+  shipping_service_image             = var.shipping_service_image
+  shipping_service_desired_count     = var.shipping_service_desired_count
+  worker_image                       = var.worker_image
+  worker_desired_count               = var.worker_desired_count
 }
 
 module "elasticache" {
@@ -70,6 +87,10 @@ module "rds" {
   instance_class       = var.rds_instance_class
   parameter_group_name = var.rds_parameter_group_name
   skip_final_snapshot  = var.rds_skip_final_snapshot
+  db_username          = var.rds_username
+  db_password          = var.rds_password
+  storage_encrypted    = var.rds_storage_encrypted
+  multi_az             = var.rds_multi_az
 }
 
 module "route53" {

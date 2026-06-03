@@ -24,15 +24,20 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_db_instance" "this" {
+
+  identifier = "${var.environment}-rds"
+  db_name    = "orders"
+
   allocated_storage    = var.allocated_storage
-  db_name              = "${var.environment}rds"
   engine               = "postgres"
   engine_version       = var.engine_version
   instance_class       = var.instance_class
-  username             = "foo"
-  password             = "foobarbaz"
+  username             = var.db_username
+  password             = var.db_password
   parameter_group_name = var.parameter_group_name
   skip_final_snapshot  = var.skip_final_snapshot
+  storage_encrypted    = var.storage_encrypted
+  multi_az             = var.multi_az
 
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.this.name

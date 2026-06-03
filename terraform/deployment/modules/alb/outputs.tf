@@ -10,6 +10,10 @@ output "target_group_arn" {
   value = aws_lb_target_group.api_gateway.arn
 }
 
+output "dashboard_target_group_arn" {
+  value = aws_lb_target_group.dashboard.arn
+}
+
 output "security_group_id" {
   value = aws_security_group.alb.id
 }

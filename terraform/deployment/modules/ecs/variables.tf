@@ -13,6 +13,11 @@ variable "target_group_arn" {
   type        = string
 }
 
+variable "dashboard_target_group_arn" {
+  description = "Target group ARN for dashboard-api service"
+  type        = string
+}
+
 variable "vpc_id" {
   description = "VPC ID for ECS"
   type        = string
@@ -47,27 +52,134 @@ variable "ecs_network_mode" {
   description = "Network mode for ECS task"
   type        = string
 }
+
+variable "ecs_task_cpu" {
+  description = "CPU used for all ECS task definitions"
+  type        = number
+}
+
+variable "ecs_task_memory" {
+  description = "Memory used for all ECS task definitions"
+  type        = number
+}
+
+variable "enable_execute_command" {
+  description = "Enable ECS Exec for services"
+  type        = bool
+}
+
 variable "api_gateway_image" {
   description = "API Gateway container image"
   type        = string
 }
 
-variable "api_gateway_cpu" {
-  description = "API Gateway task CPU"
-  type        = number
-}
-
-variable "api_gateway_memory" {
-  description = "API Gateway task memory"
-  type        = number
-}
-
-variable "api_gateway_container_port" {
-  description = "API Gateway container port"
-  type        = number
-}
-
 variable "api_gateway_desired_count" {
   description = "API Gateway desired task count"
   type        = number
+}
+
+variable "api_gateway_jwt_secret" {
+  description = "JWT secret for the API gateway"
+  type        = string
+}
+
+variable "dashboard_api_image" {
+  description = "Dashboard API container image"
+  type        = string
+}
+
+variable "dashboard_api_desired_count" {
+  description = "Dashboard API desired task count"
+  type        = number
+}
+
+variable "inventory_service_image" {
+  description = "Inventory service container image"
+  type        = string
+}
+
+variable "inventory_service_desired_count" {
+  description = "Inventory service desired task count"
+  type        = number
+}
+
+variable "notification_service_image" {
+  description = "Notification service container image"
+  type        = string
+}
+
+variable "notification_service_desired_count" {
+  description = "Notification service desired task count"
+  type        = number
+}
+
+variable "order_service_image" {
+  description = "Order service container image"
+  type        = string
+}
+
+variable "order_service_desired_count" {
+  description = "Order service desired task count"
+  type        = number
+}
+
+variable "payment_service_image" {
+  description = "Payment service container image"
+  type        = string
+}
+
+variable "payment_service_desired_count" {
+  description = "Payment service desired task count"
+  type        = number
+}
+
+variable "scheduler_image" {
+  description = "Scheduler container image"
+  type        = string
+}
+
+variable "scheduler_desired_count" {
+  description = "Scheduler desired task count"
+  type        = number
+}
+
+variable "shipping_service_image" {
+  description = "Shipping service container image"
+  type        = string
+}
+
+variable "shipping_service_desired_count" {
+  description = "Shipping service desired task count"
+  type        = number
+}
+
+variable "worker_image" {
+  description = "Worker container image"
+  type        = string
+}
+
+variable "worker_desired_count" {
+  description = "Worker desired task count"
+  type        = number
+}
+
+variable "rds_connection_url" {
+  description = "Connection URL for the RDS database"
+  type        = string
+  sensitive   = true
+}
+
+variable "elasticache_address" {
+  description = "ElastiCache endpoint address"
+  type        = string
+}
+
+variable "sqs_queue_url" {
+  description = "URL of the main SQS queue"
+  type        = string
+}
+
+variable "sqs_main_queue_arn" {
+  description = "ARN of the main SQS queue"
+  type        = string
 }

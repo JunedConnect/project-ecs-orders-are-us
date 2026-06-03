@@ -1,3 +1,3 @@
-output "cluster_id" {
-  value = aws_elasticache_cluster.this.id
+output "address" {
+  value = aws_elasticache_cluster.this.cache_nodes[0].address
 }

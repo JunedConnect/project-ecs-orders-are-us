@@ -13,58 +13,27 @@ variable "environment" {
   type        = string
 }
 
-variable "alb_internal" {
-  description = "Whether the ALB is internal or not"
-  type        = bool
-}
-
-variable "alb_load_balancer_type" {
-  description = "Type of the load balancer"
-  type        = string
-}
-
-variable "listener_port_http" {
-  description = "Port for the HTTP listener"
-  type        = string
-}
-
-variable "listener_protocol_http" {
-  description = "Protocol for the HTTP listener"
-  type        = string
-}
-
-variable "listener_port_https" {
-  description = "Port for the HTTPS listener"
-  type        = string
-}
-
-variable "listener_protocol_https" {
-  description = "Protocol for the HTTPS listener"
-  type        = string
-}
-
 variable "vpc_id" {
   description = "ID for the VPC"
   type        = string
 }
 
-variable "target_group_health_check_path" {
-  description = "Health check path for the target group"
+variable "api_gateway_target_group_health_check_path" {
+  description = "Health check path for the api-gateway target group"
   type        = string
 }
 
-variable "target_group_protocol" {
-  description = "Protocol for the target group"
+variable "api_gateway_listener_path_patterns" {
+  description = "Path patterns that should route to the api-gateway target group"
+  type        = list(string)
+}
+
+variable "dashboard_target_group_health_check_path" {
+  description = "Health check path for the dashboard target group"
   type        = string
 }
 
-variable "target_group_target_type" {
-  description = "Target type for the target group"
-  type        = string
+variable "dashboard_listener_path_patterns" {
+  description = "Path patterns that should route to the dashboard target group"
+  type        = list(string)
 }
-
-variable "api_gateway_container_port" {
-  description = "API Gateway container port"
-  type        = number
-}
-

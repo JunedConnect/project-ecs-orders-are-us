@@ -6,57 +6,24 @@ variable "aws-tags" {
 
 # ALB
 
-variable "alb_internal" {
-  description = "Whether the ALB is internal or not"
-  type        = bool
-  default     = false
-}
-
-variable "alb_load_balancer_type" {
-  description = "Type of the load balancer"
-  type        = string
-  default     = "application"
-}
-
-variable "listener_port_http" {
-  description = "Port for the HTTP listener"
-  type        = string
-  default     = "80"
-}
-
-variable "listener_protocol_http" {
-  description = "Protocol for the HTTP listener"
-  type        = string
-  default     = "HTTP"
-}
-
-variable "listener_port_https" {
-  description = "Port for the HTTPS listener"
-  type        = string
-  default     = "443"
-}
-
-variable "listener_protocol_https" {
-  description = "Protocol for the HTTPS listener"
-  type        = string
-  default     = "HTTPS"
-}
-
-variable "target_group_health_check_path" {
-  description = "Health check path for the target group"
+variable "api_gateway_target_group_health_check_path" {
+  description = "Health check path for the api-gateway target group"
   type        = string
 }
 
-variable "target_group_protocol" {
-  description = "Protocol for the target group"
-  type        = string
-  default     = "HTTP"
+variable "api_gateway_listener_path_patterns" {
+  description = "Path patterns that should route to the api-gateway target group"
+  type        = list(string)
 }
 
-variable "target_group_target_type" {
-  description = "Target type for the target group"
+variable "dashboard_target_group_health_check_path" {
+  description = "Health check path for the dashboard target group"
   type        = string
-  default     = "ip"
+}
+
+variable "dashboard_listener_path_patterns" {
+  description = "Path patterns that should route to the dashboard target group"
+  type        = list(string)
 }
 
 
@@ -91,9 +58,22 @@ variable "ecs_network_mode" {
   default     = "awsvpc"
 }
 
-variable "api_gateway_container_port" {
-  description = "API Gateway container port"
+variable "ecs_task_cpu" {
+  description = "CPU used for all ECS task definitions"
   type        = number
+  default     = 256
+}
+
+variable "ecs_task_memory" {
+  description = "Memory used for all ECS task definitions"
+  type        = number
+  default     = 512
+}
+
+variable "enable_execute_command" {
+  description = "Whether ECS Exec is enabled for ECS services"
+  type        = bool
+  default     = false
 }
 
 variable "api_gateway_image" {
@@ -101,22 +81,103 @@ variable "api_gateway_image" {
   type        = string
 }
 
-variable "api_gateway_cpu" {
-  description = "API Gateway task CPU"
-  type        = number
-  default     = 256
-}
-
-variable "api_gateway_memory" {
-  description = "API Gateway task memory"
-  type        = number
-  default     = 512
-}
-
 variable "api_gateway_desired_count" {
   description = "API Gateway desired task count"
   type        = number
   default     = 2
+}
+
+variable "api_gateway_jwt_secret" {
+  description = "JWT secret for the API gateway"
+  type        = string
+}
+
+variable "dashboard_api_image" {
+  description = "Dashboard API container image"
+  type        = string
+}
+
+variable "dashboard_api_desired_count" {
+  description = "Dashboard API desired task count"
+  type        = number
+  default     = 1
+}
+
+variable "inventory_service_image" {
+  description = "Inventory service container image"
+  type        = string
+}
+
+variable "inventory_service_desired_count" {
+  description = "Inventory service desired task count"
+  type        = number
+  default     = 1
+}
+
+variable "notification_service_image" {
+  description = "Notification service container image"
+  type        = string
+}
+
+variable "notification_service_desired_count" {
+  description = "Notification service desired task count"
+  type        = number
+  default     = 1
+}
+
+variable "order_service_image" {
+  description = "Order service container image"
+  type        = string
+}
+
+variable "order_service_desired_count" {
+  description = "Order service desired task count"
+  type        = number
+  default     = 1
+}
+
+variable "payment_service_image" {
+  description = "Payment service container image"
+  type        = string
+}
+
+variable "payment_service_desired_count" {
+  description = "Payment service desired task count"
+  type        = number
+  default     = 1
+}
+
+variable "scheduler_image" {
+  description = "Scheduler container image"
+  type        = string
+}
+
+variable "scheduler_desired_count" {
+  description = "Scheduler desired task count"
+  type        = number
+  default     = 1
+}
+
+variable "shipping_service_image" {
+  description = "Shipping service container image"
+  type        = string
+}
+
+variable "shipping_service_desired_count" {
+  description = "Shipping service desired task count"
+  type        = number
+  default     = 1
+}
+
+variable "worker_image" {
+  description = "Worker container image"
+  type        = string
+}
+
+variable "worker_desired_count" {
+  description = "Worker desired task count"
+  type        = number
+  default     = 1
 }
 
 
@@ -178,6 +239,28 @@ variable "rds_skip_final_snapshot" {
   type        = bool
 }
 
+variable "rds_username" {
+  description = "RDS Database Username"
+  type        = string
+}
+
+variable "rds_password" {
+  description = "RDS Database Password"
+  type        = string
+  sensitive   = true
+}
+
+variable "rds_storage_encrypted" {
+  description = "Whether RDS storage should be encrypted"
+  type        = bool
+  default     = true
+}
+
+variable "rds_multi_az" {
+  description = "Whether RDS should be deployed Multi-AZ"
+  type        = bool
+}
+
 
 # Route53
 
@@ -204,25 +287,25 @@ variable "dns_ttl" {
 variable "sqs_main_queue_delay_seconds" {
   description = "Delay in seconds for the main SQS queue"
   type        = number
-  default     = 90
+  default     = 0
 }
 
 variable "sqs_main_queue_max_message_size" {
   description = "Maximum message size in bytes for the main SQS queue"
   type        = number
-  default     = 2048
+  default     = 262144
 }
 
 variable "sqs_main_queue_message_retention_seconds" {
   description = "Message retention period in seconds for the main SQS queue"
   type        = number
-  default     = 86400
+  default     = 345600
 }
 
 variable "sqs_main_queue_receive_wait_time_seconds" {
   description = "Receive wait time in seconds for the main SQS queue"
   type        = number
-  default     = 10
+  default     = 0
 }
 
 variable "sqs_max_receive_count" {

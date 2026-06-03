@@ -144,27 +144,56 @@ resource "aws_vpc_endpoint" "logs" {
   private_dns_enabled = true
 }
 
-resource "aws_vpc_endpoint" "rds" {
-  vpc_id              = aws_vpc.this.id
-  service_name        = "com.amazonaws.eu-west-2.rds"
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
-  security_group_ids  = [aws_security_group.vpc-endpoint.id]
-  private_dns_enabled = true
-}
+# resource "aws_vpc_endpoint" "rds" {
+#   vpc_id              = aws_vpc.this.id
+#   service_name        = "com.amazonaws.eu-west-2.rds"
+#   vpc_endpoint_type   = "Interface"
+#   subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
+#   security_group_ids  = [aws_security_group.vpc-endpoint.id]
+#   private_dns_enabled = true
+# }
 
-resource "aws_vpc_endpoint" "elasticache" {
-  vpc_id              = aws_vpc.this.id
-  service_name        = "com.amazonaws.eu-west-2.elasticache"
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
-  security_group_ids  = [aws_security_group.vpc-endpoint.id]
-  private_dns_enabled = true
-}
+# resource "aws_vpc_endpoint" "elasticache" {
+#   vpc_id              = aws_vpc.this.id
+#   service_name        = "com.amazonaws.eu-west-2.elasticache"
+#   vpc_endpoint_type   = "Interface"
+#   subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
+#   security_group_ids  = [aws_security_group.vpc-endpoint.id]
+#   private_dns_enabled = true
+# }
 
 resource "aws_vpc_endpoint" "sqs" {
   vpc_id              = aws_vpc.this.id
   service_name        = "com.amazonaws.eu-west-2.sqs"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
+  security_group_ids  = [aws_security_group.vpc-endpoint.id]
+  private_dns_enabled = true
+}
+
+# the below is for debugging with SSM
+
+resource "aws_vpc_endpoint" "ssm" {
+  vpc_id              = aws_vpc.this.id
+  service_name        = "com.amazonaws.eu-west-2.ssm"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
+  security_group_ids  = [aws_security_group.vpc-endpoint.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ssmmessages" {
+  vpc_id              = aws_vpc.this.id
+  service_name        = "com.amazonaws.eu-west-2.ssmmessages"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
+  security_group_ids  = [aws_security_group.vpc-endpoint.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ec2messages" {
+  vpc_id              = aws_vpc.this.id
+  service_name        = "com.amazonaws.eu-west-2.ec2messages"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
   security_group_ids  = [aws_security_group.vpc-endpoint.id]
