@@ -108,6 +108,48 @@ resource "aws_iam_role_policy" "ecs_logs_policy" {
   })
 }
 
+resource "aws_iam_role_policy" "ecs_secrets_policy" {
+  name = "${var.environment}-ecs-secrets-policy"
+  role = aws_iam_role.ecs_task_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [
+          var.rds_database_credentials_secret_arn,
+          aws_secretsmanager_secret_version.api_gateway_jwt_secret.arn
+        ]
+      }
+    ]
+  })
+}
+
+resource "random_password" "api_gateway_jwt_secret" {
+  length           = 64
+  special          = true
+  override_special = "._-"
+}
+
+resource "aws_secretsmanager_secret" "api_gateway_jwt_secret" {
+  name                    = "${var.environment}/ecs/api-gateway-jwt-secret"
+  description             = "JWT secret for the ${var.environment} API Gateway ECS task"
+  recovery_window_in_days = 7
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "api_gateway_jwt_secret" {
+  secret_id     = aws_secretsmanager_secret.api_gateway_jwt_secret.id
+  secret_string = random_password.api_gateway_jwt_secret.result
+}
+
 resource "aws_iam_role" "ecs_task" {
   name = "${var.environment}-ecs-task-role"
 

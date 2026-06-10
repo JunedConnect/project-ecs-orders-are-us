@@ -153,6 +153,15 @@ resource "aws_vpc_endpoint" "sqs" {
   private_dns_enabled = true
 }
 
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id              = aws_vpc.this.id
+  service_name        = "com.amazonaws.eu-west-2.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
+  security_group_ids  = [aws_security_group.vpc-endpoint.id]
+  private_dns_enabled = true
+}
+
 # the below is for debugging with SSM
 
 resource "aws_vpc_endpoint" "ssm" {

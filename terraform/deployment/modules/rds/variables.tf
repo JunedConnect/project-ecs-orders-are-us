@@ -48,12 +48,6 @@ variable "db_username" {
   type        = string
 }
 
-variable "db_password" {
-  description = "Password for the RDS instance"
-  type        = string
-  sensitive   = true
-}
-
 variable "storage_encrypted" {
   description = "Whether storage for RDS should be encrypted"
   type        = bool

@@ -7,6 +7,11 @@ terraform {
       source  = "hashicorp/aws"
       version = "5.95.0"
     }
+
+    random = {
+      source  = "hashicorp/random"
+      version = "3.7.2"
+    }
   }
   backend "s3" {
     bucket       = "prod-orders-are-us-tfstate"

@@ -46,10 +46,6 @@ resource "aws_ecs_task_definition" "api_gateway" {
       ]
       environment = [
         {
-          name  = "JWT_SECRET"
-          value = var.api_gateway_jwt_secret
-        },
-        {
           name  = "REDIS_URL"
           value = "redis://${var.elasticache_address}:6379/0"
         },
@@ -76,6 +72,12 @@ resource "aws_ecs_task_definition" "api_gateway" {
         {
           name  = "DASHBOARD_SERVICE_URL"
           value = "http://dashboard-api.${aws_service_discovery_private_dns_namespace.this.name}:8086"
+        }
+      ]
+      secrets = [
+        {
+          name      = "JWT_SECRET"
+          valueFrom = aws_secretsmanager_secret_version.api_gateway_jwt_secret.arn
         }
       ]
       logConfiguration = {
@@ -166,10 +168,10 @@ resource "aws_ecs_task_definition" "dashboard_api" {
           hostPort      = 8086
         }
       ]
-      environment = [
+      secrets = [
         {
-          name  = "DATABASE_URL"
-          value = var.rds_connection_url
+          name      = "DATABASE_URL"
+          valueFrom = "${var.rds_database_credentials_secret_arn}:url::"
         }
       ]
       logConfiguration = {
@@ -260,10 +262,10 @@ resource "aws_ecs_task_definition" "inventory_service" {
           hostPort      = 8082
         }
       ]
-      environment = [
+      secrets = [
         {
-          name  = "DATABASE_URL"
-          value = var.rds_connection_url
+          name      = "DATABASE_URL"
+          valueFrom = "${var.rds_database_credentials_secret_arn}:url::"
         }
       ]
       logConfiguration = {
@@ -348,10 +350,10 @@ resource "aws_ecs_task_definition" "notification_service" {
           hostPort      = 8084
         }
       ]
-      environment = [
+      secrets = [
         {
-          name  = "DATABASE_URL"
-          value = var.rds_connection_url
+          name      = "DATABASE_URL"
+          valueFrom = "${var.rds_database_credentials_secret_arn}:url::"
         }
       ]
       logConfiguration = {
@@ -438,12 +440,14 @@ resource "aws_ecs_task_definition" "order_service" {
       ]
       environment = [
         {
-          name  = "DATABASE_URL"
-          value = var.rds_connection_url
-        },
-        {
           name  = "SQS_QUEUE_URL"
           value = var.sqs_queue_url
+        }
+      ]
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.rds_database_credentials_secret_arn}:url::"
         }
       ]
       logConfiguration = {
@@ -530,12 +534,14 @@ resource "aws_ecs_task_definition" "payment_service" {
       ]
       environment = [
         {
-          name  = "DATABASE_URL"
-          value = var.rds_connection_url
-        },
-        {
           name  = "SQS_QUEUE_URL"
           value = var.sqs_queue_url
+        }
+      ]
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.rds_database_credentials_secret_arn}:url::"
         }
       ]
       logConfiguration = {
@@ -622,12 +628,14 @@ resource "aws_ecs_task_definition" "scheduler" {
       ]
       environment = [
         {
-          name  = "DATABASE_URL"
-          value = var.rds_connection_url
-        },
-        {
           name  = "HEALTH_PORT"
           value = "8091"
+        }
+      ]
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.rds_database_credentials_secret_arn}:url::"
         }
       ]
       logConfiguration = {
@@ -714,12 +722,14 @@ resource "aws_ecs_task_definition" "shipping_service" {
       ]
       environment = [
         {
-          name  = "DATABASE_URL"
-          value = var.rds_connection_url
-        },
-        {
           name  = "SQS_QUEUE_URL"
           value = var.sqs_queue_url
+        }
+      ]
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.rds_database_credentials_secret_arn}:url::"
         }
       ]
       logConfiguration = {

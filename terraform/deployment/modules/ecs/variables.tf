@@ -78,11 +78,6 @@ variable "api_gateway_desired_count" {
   type        = number
 }
 
-variable "api_gateway_jwt_secret" {
-  description = "JWT secret for the API gateway"
-  type        = string
-}
-
 variable "dashboard_api_image" {
   description = "Dashboard API container image"
   type        = string
@@ -163,8 +158,8 @@ variable "worker_desired_count" {
   type        = number
 }
 
-variable "rds_connection_url" {
-  description = "Connection URL for the RDS database"
+variable "rds_database_credentials_secret_arn" {
+  description = "Secrets Manager secret ARN containing the RDS connection URL"
   type        = string
   sensitive   = true
 }

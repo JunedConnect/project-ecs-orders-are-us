@@ -87,11 +87,6 @@ variable "api_gateway_desired_count" {
   default     = 2
 }
 
-variable "api_gateway_jwt_secret" {
-  description = "JWT secret for the API gateway"
-  type        = string
-}
-
 variable "dashboard_api_image" {
   description = "Dashboard API container image"
   type        = string
@@ -242,12 +237,6 @@ variable "rds_skip_final_snapshot" {
 variable "rds_username" {
   description = "RDS Database Username"
   type        = string
-}
-
-variable "rds_password" {
-  description = "RDS Database Password"
-  type        = string
-  sensitive   = true
 }
 
 variable "rds_storage_encrypted" {

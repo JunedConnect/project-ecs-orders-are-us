@@ -23,6 +23,12 @@ resource "aws_security_group" "rds" {
   }
 }
 
+resource "random_password" "db_password" {
+  length           = 32
+  special          = true
+  override_special = "._-"
+}
+
 resource "aws_db_instance" "this" {
 
   identifier = "${var.environment}-rds"
@@ -33,7 +39,7 @@ resource "aws_db_instance" "this" {
   engine_version       = var.engine_version
   instance_class       = var.instance_class
   username             = var.db_username
-  password             = var.db_password
+  password             = random_password.db_password.result
   parameter_group_name = var.parameter_group_name
   skip_final_snapshot  = var.skip_final_snapshot
   storage_encrypted    = var.storage_encrypted
@@ -41,4 +47,22 @@ resource "aws_db_instance" "this" {
 
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
+}
+
+resource "aws_secretsmanager_secret" "database_credentials" {
+  name                    = "${var.environment}/rds/database-credentials"
+  description             = "Database credentials and connection URL for ${var.environment} RDS"
+  recovery_window_in_days = 7
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "database_credentials" {
+  secret_id = aws_secretsmanager_secret.database_credentials.id
+
+  secret_string = jsonencode({
+    url      = "postgres://${var.db_username}:${random_password.db_password.result}@${aws_db_instance.this.address}:${aws_db_instance.this.port}/${aws_db_instance.this.db_name}"
+  })
 }

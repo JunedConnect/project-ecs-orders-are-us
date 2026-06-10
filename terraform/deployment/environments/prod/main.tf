@@ -21,26 +21,25 @@ module "ecs" {
   vpc_id                = module.vpc.vpc_id
   private-subnet-ids    = module.vpc.private-subnet-ids
 
-  environment                       = var.aws-tags["Environment"]
-  ecs_launch_type                   = var.ecs_launch_type
-  ecs_platform_version              = var.ecs_platform_version
-  ecs_scheduling_strategy           = var.ecs_scheduling_strategy
-  ecs_task_requires_compatibilities = var.ecs_task_requires_compatibilities
-  ecs_network_mode                  = var.ecs_network_mode
-  ecs_task_cpu                      = var.ecs_task_cpu
-  ecs_task_memory                   = var.ecs_task_memory
-  enable_execute_command            = var.enable_execute_command
-  target_group_arn                  = module.alb.target_group_arn
-  dashboard_target_group_arn        = module.alb.dashboard_target_group_arn
-  rds_connection_url                = module.rds.connection_url
-  elasticache_address               = module.elasticache.address
-  sqs_queue_url                     = module.sqs.main_queue_url
-  sqs_main_queue_arn                = module.sqs.main_queue_arn
+  environment                         = var.aws-tags["Environment"]
+  ecs_launch_type                     = var.ecs_launch_type
+  ecs_platform_version                = var.ecs_platform_version
+  ecs_scheduling_strategy             = var.ecs_scheduling_strategy
+  ecs_task_requires_compatibilities   = var.ecs_task_requires_compatibilities
+  ecs_network_mode                    = var.ecs_network_mode
+  ecs_task_cpu                        = var.ecs_task_cpu
+  ecs_task_memory                     = var.ecs_task_memory
+  enable_execute_command              = var.enable_execute_command
+  target_group_arn                    = module.alb.target_group_arn
+  dashboard_target_group_arn          = module.alb.dashboard_target_group_arn
+  rds_database_credentials_secret_arn = module.rds.database_credentials_secret_arn
+  elasticache_address                 = module.elasticache.address
+  sqs_queue_url                       = module.sqs.main_queue_url
+  sqs_main_queue_arn                  = module.sqs.main_queue_arn
 
   # API Gateway config
   api_gateway_image         = var.api_gateway_image
   api_gateway_desired_count = var.api_gateway_desired_count
-  api_gateway_jwt_secret    = var.api_gateway_jwt_secret
 
   dashboard_api_image                = var.dashboard_api_image
   dashboard_api_desired_count        = var.dashboard_api_desired_count
@@ -88,7 +87,6 @@ module "rds" {
   parameter_group_name = var.rds_parameter_group_name
   skip_final_snapshot  = var.rds_skip_final_snapshot
   db_username          = var.rds_username
-  db_password          = var.rds_password
   storage_encrypted    = var.rds_storage_encrypted
   multi_az             = var.rds_multi_az
 }
