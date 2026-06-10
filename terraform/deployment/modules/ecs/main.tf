@@ -37,7 +37,78 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-resource "aws_iam_role" "ecs" {
+resource "aws_iam_role" "ecs_task_execution" {
+  name = "${var.environment}-ecs-task-execution-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+        Effect = "Allow"
+        Sid    = ""
+      },
+    ]
+  })
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+resource "aws_iam_role_policy" "ecs_ecr_policy" {
+  name = "${var.environment}-ecs-ecr-policy"
+  role = aws_iam_role.ecs_task_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "arn:aws:ecr:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:repository/${var.environment}-*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "ecs_logs_policy" {
+  name = "${var.environment}-ecs-logs-policy"
+  role = aws_iam_role.ecs_task_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = [
+          "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${var.environment}-*",
+          "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${var.environment}-*:*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "ecs_task" {
   name = "${var.environment}-ecs-task-role"
 
   assume_role_policy = jsonencode({
@@ -55,10 +126,10 @@ resource "aws_iam_role" "ecs" {
   })
 }
 
-# the below policy is used to allow ECS task Exec
+# the below policy is used to allow ECS task Exec (Debugging Purposes)
 resource "aws_iam_role_policy" "ecs_ssm_policy" {
   name = "${var.environment}-ecs-ssm-policy"
-  role = aws_iam_role.ecs.id
+  role = aws_iam_role.ecs_task.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -86,7 +157,7 @@ resource "aws_iam_role_policy" "ecs_ssm_policy" {
 
 resource "aws_iam_role_policy" "ecs_sqs_policy" {
   name = "${var.environment}-ecs-sqs-policy"
-  role = aws_iam_role.ecs.id
+  role = aws_iam_role.ecs_task.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -99,37 +170,6 @@ resource "aws_iam_role_policy" "ecs_sqs_policy" {
           "sqs:DeleteMessage",
         ]
         Resource = [var.sqs_main_queue_arn]
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ecs-policy-attachment-main" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role       = aws_iam_role.ecs.name
-}
-
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-resource "aws_iam_role_policy" "ecs_logs_policy" {
-  name = "${var.environment}-ecs-logs-policy"
-  role = aws_iam_role.ecs.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = [
-          "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${var.environment}-*",
-          "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${var.environment}-*:*"
-        ]
       }
     ]
   })

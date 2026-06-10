@@ -25,8 +25,8 @@ resource "aws_service_discovery_service" "api_gateway" {
 resource "aws_ecs_task_definition" "api_gateway" {
   family                   = "${var.environment}-api-gateway"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
@@ -147,8 +147,8 @@ resource "aws_service_discovery_service" "dashboard_api" {
 resource "aws_ecs_task_definition" "dashboard_api" {
   family                   = "${var.environment}-dashboard-api"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
@@ -241,8 +241,8 @@ resource "aws_service_discovery_service" "inventory_service" {
 resource "aws_ecs_task_definition" "inventory_service" {
   family                   = "${var.environment}-inventory-service"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
@@ -329,8 +329,8 @@ resource "aws_service_discovery_service" "notification_service" {
 resource "aws_ecs_task_definition" "notification_service" {
   family                   = "${var.environment}-notification-service"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
@@ -417,8 +417,8 @@ resource "aws_service_discovery_service" "order_service" {
 resource "aws_ecs_task_definition" "order_service" {
   family                   = "${var.environment}-order-service"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
@@ -509,8 +509,8 @@ resource "aws_service_discovery_service" "payment_service" {
 resource "aws_ecs_task_definition" "payment_service" {
   family                   = "${var.environment}-payment-service"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
@@ -601,8 +601,8 @@ resource "aws_service_discovery_service" "scheduler" {
 resource "aws_ecs_task_definition" "scheduler" {
   family                   = "${var.environment}-scheduler"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
@@ -693,8 +693,8 @@ resource "aws_service_discovery_service" "shipping_service" {
 resource "aws_ecs_task_definition" "shipping_service" {
   family                   = "${var.environment}-shipping-service"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
@@ -785,8 +785,8 @@ resource "aws_service_discovery_service" "worker" {
 resource "aws_ecs_task_definition" "worker" {
   family                   = "${var.environment}-worker"
   requires_compatibilities = var.ecs_task_requires_compatibilities
-  task_role_arn            = aws_iam_role.ecs.arn
-  execution_role_arn       = aws_iam_role.ecs.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   network_mode             = var.ecs_network_mode
   cpu                      = var.ecs_task_cpu
   memory                   = var.ecs_task_memory
