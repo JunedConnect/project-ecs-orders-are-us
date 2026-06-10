@@ -138,11 +138,7 @@ resource "random_password" "api_gateway_jwt_secret" {
 resource "aws_secretsmanager_secret" "api_gateway_jwt_secret" {
   name                    = "${var.environment}/ecs/api-gateway-jwt-secret"
   description             = "JWT secret for the ${var.environment} API Gateway ECS task"
-  recovery_window_in_days = 7
-
-  lifecycle {
-    prevent_destroy = true
-  }
+  recovery_window_in_days = var.secret_recovery_window_in_days
 }
 
 resource "aws_secretsmanager_secret_version" "api_gateway_jwt_secret" {

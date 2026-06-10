@@ -68,6 +68,11 @@ variable "enable_execute_command" {
   type        = bool
 }
 
+variable "secret_recovery_window_in_days" {
+  description = "Number of days Secrets Manager keeps ECS secrets recoverable after deletion"
+  type        = number
+}
+
 variable "api_gateway_image" {
   description = "API Gateway container image"
   type        = string

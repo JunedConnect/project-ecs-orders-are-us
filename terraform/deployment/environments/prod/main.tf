@@ -30,6 +30,7 @@ module "ecs" {
   ecs_task_cpu                        = var.ecs_task_cpu
   ecs_task_memory                     = var.ecs_task_memory
   enable_execute_command              = var.enable_execute_command
+  secret_recovery_window_in_days      = var.secrets_recovery_window_in_days
   target_group_arn                    = module.alb.target_group_arn
   dashboard_target_group_arn          = module.alb.dashboard_target_group_arn
   rds_database_credentials_secret_arn = module.rds.database_credentials_secret_arn
@@ -81,14 +82,15 @@ module "rds" {
   private-subnet-ids    = module.vpc.private-subnet-ids
   ecs_security_group_id = module.ecs.security_group_id
 
-  allocated_storage    = var.rds_allocated_storage
-  engine_version       = var.rds_engine_version
-  instance_class       = var.rds_instance_class
-  parameter_group_name = var.rds_parameter_group_name
-  skip_final_snapshot  = var.rds_skip_final_snapshot
-  db_username          = var.rds_username
-  storage_encrypted    = var.rds_storage_encrypted
-  multi_az             = var.rds_multi_az
+  allocated_storage              = var.rds_allocated_storage
+  engine_version                 = var.rds_engine_version
+  instance_class                 = var.rds_instance_class
+  parameter_group_name           = var.rds_parameter_group_name
+  skip_final_snapshot            = var.rds_skip_final_snapshot
+  db_username                    = var.rds_username
+  secret_recovery_window_in_days = var.secrets_recovery_window_in_days
+  storage_encrypted              = var.rds_storage_encrypted
+  multi_az                       = var.rds_multi_az
 }
 
 module "route53" {

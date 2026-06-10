@@ -48,6 +48,11 @@ variable "db_username" {
   type        = string
 }
 
+variable "secret_recovery_window_in_days" {
+  description = "Number of days Secrets Manager keeps the RDS secret recoverable after deletion"
+  type        = number
+}
+
 variable "storage_encrypted" {
   description = "Whether storage for RDS should be encrypted"
   type        = bool

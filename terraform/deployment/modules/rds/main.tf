@@ -52,17 +52,13 @@ resource "aws_db_instance" "this" {
 resource "aws_secretsmanager_secret" "database_credentials" {
   name                    = "${var.environment}/rds/database-credentials"
   description             = "Database credentials and connection URL for ${var.environment} RDS"
-  recovery_window_in_days = 7
-
-  lifecycle {
-    prevent_destroy = true
-  }
+  recovery_window_in_days = var.secret_recovery_window_in_days
 }
 
 resource "aws_secretsmanager_secret_version" "database_credentials" {
   secret_id = aws_secretsmanager_secret.database_credentials.id
 
   secret_string = jsonencode({
-    url      = "postgres://${var.db_username}:${random_password.db_password.result}@${aws_db_instance.this.address}:${aws_db_instance.this.port}/${aws_db_instance.this.db_name}"
+    url = "postgres://${var.db_username}:${random_password.db_password.result}@${aws_db_instance.this.address}:${aws_db_instance.this.port}/${aws_db_instance.this.db_name}"
   })
 }

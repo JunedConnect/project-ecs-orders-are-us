@@ -3,6 +3,12 @@ variable "aws-tags" {
   type        = map(string)
 }
 
+variable "secrets_recovery_window_in_days" {
+  description = "Number of days Secrets Manager keeps deleted secrets recoverable"
+  type        = number
+  default     = 7
+}
+
 
 # ALB
 
