@@ -91,6 +91,8 @@ module "rds" {
   secret_recovery_window_in_days = var.secrets_recovery_window_in_days
   storage_encrypted              = var.rds_storage_encrypted
   multi_az                       = var.rds_multi_az
+
+  depends_on = [module.elasticache] #this is needed otherwise ElastiCache cluster gives a incompatable network type error
 }
 
 module "route53" {
