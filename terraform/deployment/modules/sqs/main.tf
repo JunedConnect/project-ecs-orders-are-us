@@ -15,28 +15,6 @@ resource "aws_sqs_queue_redrive_policy" "this" {
   })
 }
 
-# resource "aws_sqs_queue_policy" "example" {
-#   queue_url = aws_sqs_queue.this.id
-#
-#   policy = jsonencode({
-#     Version = "2012-10-17" # !! Important !!
-#     Statement = [{
-#       Sid    = "Cejuwdam"
-#       Effect = "Allow"
-#       Principal = {
-#         Service = "s3.amazonaws.com"
-#       }
-#       Action   = "SQS:SendMessage"
-#       Resource = aws_sqs_queue.example.arn
-#       Condition = {
-#         ArnLike = {
-#           "aws:SourceArn" = aws_s3_bucket.example.arn
-#         }
-#       }
-#     }]
-#   })
-# }
-
 resource "aws_sqs_queue" "deadletter" {
   name = "${var.environment}-sqs-deadletter-queue"
 }
