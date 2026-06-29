@@ -14,6 +14,17 @@ module "alb" {
   dashboard_listener_path_patterns           = var.dashboard_listener_path_patterns
 }
 
+module "cloudwatch" {
+  source = "../../modules/cloudwatch"
+
+  environment                     = var.aws-tags["Environment"]
+  sqs_queue_name                  = module.sqs.main_queue_name
+  rds_instance_identifier         = module.rds.instance_identifier
+  rds_allocated_storage           = var.rds_allocated_storage
+  alb_arn_suffix                  = module.alb.alb_arn_suffix
+  cloudwatch_alarm_email_endpoint = var.cloudwatch_alarm_email_endpoint
+}
+
 module "ecs" {
   source = "../../modules/ecs"
 
@@ -140,6 +151,7 @@ module "waf" {
 
   environment                  = var.aws-tags["Environment"]
   waf_association_resource_arn = module.alb.alb_arn
+  waf_log_group_arn            = module.cloudwatch.waf_log_group_arn
   cloudwatch_metrics_enabled   = var.waf_cloudwatch_metrics_enabled
   sampled_requests_enabled     = var.waf_sampled_requests_enabled
   metric_name                  = var.waf_metric_name

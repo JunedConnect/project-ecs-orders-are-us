@@ -37,8 +37,8 @@ resource "aws_elasticache_cluster" "this" {
   port                 = 6379
   security_group_ids   = [aws_security_group.elasticache.id]
   subnet_group_name    = aws_elasticache_subnet_group.this.name
-  ip_discovery            = "ipv4"
-  network_type            = "ipv4"
+  ip_discovery         = "ipv4"
+  network_type         = "ipv4"
 
   log_delivery_configuration {
     destination      = aws_cloudwatch_log_group.elasticache.name

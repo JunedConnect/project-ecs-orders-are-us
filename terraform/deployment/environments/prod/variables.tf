@@ -9,6 +9,11 @@ variable "secrets_recovery_window_in_days" {
   default     = 7
 }
 
+variable "cloudwatch_alarm_email_endpoint" {
+  description = "Email address subscribed to CloudWatch alarm SNS notifications"
+  type        = string
+}
+
 
 # ALB
 

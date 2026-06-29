@@ -152,7 +152,7 @@ resource "aws_wafv2_web_acl_association" "this" {
 }
 
 resource "aws_wafv2_web_acl_logging_configuration" "this" {
-  log_destination_configs = [aws_cloudwatch_log_group.waf.arn]
+  log_destination_configs = [var.waf_log_group_arn]
   resource_arn            = aws_wafv2_web_acl.this.arn
 
   redacted_fields {
@@ -163,8 +163,4 @@ resource "aws_wafv2_web_acl_logging_configuration" "this" {
   redacted_fields {
     uri_path {}
   }
-}
-
-resource "aws_cloudwatch_log_group" "waf" {
-  name = "aws-waf-logs-${var.environment}"
 }

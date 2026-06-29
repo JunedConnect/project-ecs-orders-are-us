@@ -21,3 +21,7 @@ output "security_group_id" {
 output "alb_arn" {
   value = aws_lb.this.arn
 }
+
+output "alb_arn_suffix" {
+  value = aws_lb.this.arn_suffix
+}

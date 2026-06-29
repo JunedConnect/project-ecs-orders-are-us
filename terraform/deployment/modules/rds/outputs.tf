@@ -3,3 +3,8 @@ output "database_credentials_secret_arn" {
   value       = aws_secretsmanager_secret_version.database_credentials.arn
   sensitive   = true
 }
+
+output "instance_identifier" {
+  description = "Identifier of the RDS instance"
+  value       = aws_db_instance.this.identifier
+}
