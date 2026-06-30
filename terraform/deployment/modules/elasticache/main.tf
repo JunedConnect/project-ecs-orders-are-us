@@ -24,7 +24,7 @@ resource "aws_security_group" "elasticache" {
 
 resource "aws_elasticache_subnet_group" "this" {
   name       = "${var.environment}-elasticache-subnet-group"
-  subnet_ids = var.private-subnet-ids
+  subnet_ids = var.private_subnet_ids
 }
 
 resource "aws_elasticache_cluster" "this" {

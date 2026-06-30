@@ -3,57 +3,57 @@ variable "environment" {
   type        = string
 }
 
-variable "vpc-cidr-block" {
+variable "vpc_cidr_block" {
   description = "CIDR block for the VPC"
   type        = string
 }
 
-variable "publicsubnet1-cidr-block" {
+variable "publicsubnet1_cidr_block" {
   description = "CIDR block for public subnet 1"
   type        = string
 }
 
-variable "publicsubnet2-cidr-block" {
+variable "publicsubnet2_cidr_block" {
   description = "CIDR block for public subnet 2"
   type        = string
 }
 
-variable "privatesubnet1-cidr-block" {
+variable "privatesubnet1_cidr_block" {
   description = "CIDR block for private subnet 1"
   type        = string
 }
 
-variable "privatesubnet2-cidr-block" {
+variable "privatesubnet2_cidr_block" {
   description = "CIDR block for private subnet 2"
   type        = string
 }
 
-variable "enable-dns-support" {
+variable "enable_dns_support" {
   description = "Enable DNS support in the VPC"
   type        = bool
 }
 
-variable "enable-dns-hostnames" {
+variable "enable_dns_hostnames" {
   description = "Enable DNS hostnames in the VPC"
   type        = bool
 }
 
-variable "subnet-map-public-ip-on-launch" {
+variable "subnet_map_public_ip_on_launch" {
   description = "Whether to map public IP on launch for subnets"
   type        = bool
 }
 
-variable "availability-zone-1" {
+variable "availability_zone_1" {
   description = "Availability zone 1"
   type        = string
 }
 
-variable "availability-zone-2" {
+variable "availability_zone_2" {
   description = "Availability zone 2"
   type        = string
 }
 
-variable "route-cidr-block" {
+variable "route_cidr_block" {
   description = "CIDR block for the route"
   type        = string
 }

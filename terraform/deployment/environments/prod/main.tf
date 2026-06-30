@@ -2,9 +2,9 @@ module "alb" {
   source = "../../modules/alb"
 
   certificate_arn   = module.route53.certificate_arn
-  public-subnet-ids = module.vpc.public-subnet-ids
+  public_subnet_ids = module.vpc.public_subnet_ids
 
-  environment = var.aws-tags["Environment"]
+  environment = var.aws_tags["Environment"]
 
   vpc_id = module.vpc.vpc_id
 
@@ -17,7 +17,7 @@ module "alb" {
 module "cloudwatch" {
   source = "../../modules/cloudwatch"
 
-  environment                     = var.aws-tags["Environment"]
+  environment                     = var.aws_tags["Environment"]
   sqs_queue_name                  = module.sqs.main_queue_name
   rds_instance_identifier         = module.rds.instance_identifier
   rds_allocated_storage           = var.rds_allocated_storage
@@ -30,9 +30,9 @@ module "ecs" {
 
   alb_security_group_id = module.alb.security_group_id
   vpc_id                = module.vpc.vpc_id
-  private-subnet-ids    = module.vpc.private-subnet-ids
+  private_subnet_ids    = module.vpc.private_subnet_ids
 
-  environment                         = var.aws-tags["Environment"]
+  environment                         = var.aws_tags["Environment"]
   ecs_launch_type                     = var.ecs_launch_type
   ecs_platform_version                = var.ecs_platform_version
   ecs_scheduling_strategy             = var.ecs_scheduling_strategy
@@ -74,9 +74,9 @@ module "ecs" {
 module "elasticache" {
   source = "../../modules/elasticache"
 
-  environment           = var.aws-tags["Environment"]
+  environment           = var.aws_tags["Environment"]
   vpc_id                = module.vpc.vpc_id
-  private-subnet-ids    = module.vpc.private-subnet-ids
+  private_subnet_ids    = module.vpc.private_subnet_ids
   ecs_security_group_id = module.ecs.security_group_id
 
   node_type            = var.elasticache_node_type
@@ -88,9 +88,9 @@ module "elasticache" {
 module "rds" {
   source = "../../modules/rds"
 
-  environment           = var.aws-tags["Environment"]
+  environment           = var.aws_tags["Environment"]
   vpc_id                = module.vpc.vpc_id
-  private-subnet-ids    = module.vpc.private-subnet-ids
+  private_subnet_ids    = module.vpc.private_subnet_ids
   ecs_security_group_id = module.ecs.security_group_id
 
   allocated_storage              = var.rds_allocated_storage
@@ -120,7 +120,7 @@ module "route53" {
 module "sqs" {
   source = "../../modules/sqs"
 
-  environment                          = var.aws-tags["Environment"]
+  environment                          = var.aws_tags["Environment"]
   main_queue_delay_seconds             = var.sqs_main_queue_delay_seconds
   main_queue_max_message_size          = var.sqs_main_queue_max_message_size
   main_queue_message_retention_seconds = var.sqs_main_queue_message_retention_seconds
@@ -131,25 +131,25 @@ module "sqs" {
 module "vpc" {
   source = "../../modules/vpc"
 
-  environment                    = var.aws-tags["Environment"]
-  vpc-cidr-block                 = var.vpc-cidr-block
-  publicsubnet1-cidr-block       = var.publicsubnet1-cidr-block
-  publicsubnet2-cidr-block       = var.publicsubnet2-cidr-block
-  privatesubnet1-cidr-block      = var.privatesubnet1-cidr-block
-  privatesubnet2-cidr-block      = var.privatesubnet2-cidr-block
-  enable-dns-support             = var.enable-dns-support
-  enable-dns-hostnames           = var.enable-dns-hostnames
-  subnet-map-public-ip-on-launch = var.subnet-map-public-ip-on-launch
-  availability-zone-1            = var.availability-zone-1
-  availability-zone-2            = var.availability-zone-2
-  route-cidr-block               = var.route-cidr-block
+  environment                    = var.aws_tags["Environment"]
+  vpc_cidr_block                 = var.vpc_cidr_block
+  publicsubnet1_cidr_block       = var.publicsubnet1_cidr_block
+  publicsubnet2_cidr_block       = var.publicsubnet2_cidr_block
+  privatesubnet1_cidr_block      = var.privatesubnet1_cidr_block
+  privatesubnet2_cidr_block      = var.privatesubnet2_cidr_block
+  enable_dns_support             = var.enable_dns_support
+  enable_dns_hostnames           = var.enable_dns_hostnames
+  subnet_map_public_ip_on_launch = var.subnet_map_public_ip_on_launch
+  availability_zone_1            = var.availability_zone_1
+  availability_zone_2            = var.availability_zone_2
+  route_cidr_block               = var.route_cidr_block
 
 }
 
 module "waf" {
   source = "../../modules/waf"
 
-  environment                  = var.aws-tags["Environment"]
+  environment                  = var.aws_tags["Environment"]
   waf_association_resource_arn = module.alb.alb_arn
   waf_log_group_arn            = module.cloudwatch.waf_log_group_arn
   cloudwatch_metrics_enabled   = var.waf_cloudwatch_metrics_enabled

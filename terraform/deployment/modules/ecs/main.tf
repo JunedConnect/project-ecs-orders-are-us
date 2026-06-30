@@ -344,7 +344,7 @@ resource "aws_ecs_service" "api_gateway" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   load_balancer {
@@ -437,7 +437,7 @@ resource "aws_ecs_service" "dashboard_api" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   load_balancer {
@@ -530,7 +530,7 @@ resource "aws_ecs_service" "inventory_service" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   service_registries {
@@ -617,7 +617,7 @@ resource "aws_ecs_service" "notification_service" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   service_registries {
@@ -710,7 +710,7 @@ resource "aws_ecs_service" "order_service" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   service_registries {
@@ -803,7 +803,7 @@ resource "aws_ecs_service" "payment_service" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   service_registries {
@@ -896,7 +896,7 @@ resource "aws_ecs_service" "scheduler" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   service_registries {
@@ -989,7 +989,7 @@ resource "aws_ecs_service" "shipping_service" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   service_registries {
@@ -1100,7 +1100,7 @@ resource "aws_ecs_service" "worker" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = var.private-subnet-ids
+    subnets          = var.private_subnet_ids
   }
 
   service_registries {

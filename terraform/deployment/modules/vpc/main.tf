@@ -1,8 +1,8 @@
 resource "aws_vpc" "this" {
-  cidr_block = var.vpc-cidr-block
+  cidr_block = var.vpc_cidr_block
 
-  enable_dns_support   = var.enable-dns-support
-  enable_dns_hostnames = var.enable-dns-hostnames
+  enable_dns_support   = var.enable_dns_support
+  enable_dns_hostnames = var.enable_dns_hostnames
 
   tags = {
     Name = "${var.environment}-vpc"
@@ -11,31 +11,31 @@ resource "aws_vpc" "this" {
 
 resource "aws_subnet" "publicsubnet1" {
   vpc_id                  = aws_vpc.this.id
-  cidr_block              = var.publicsubnet1-cidr-block
-  map_public_ip_on_launch = var.subnet-map-public-ip-on-launch
-  availability_zone       = var.availability-zone-1
+  cidr_block              = var.publicsubnet1_cidr_block
+  map_public_ip_on_launch = var.subnet_map_public_ip_on_launch
+  availability_zone       = var.availability_zone_1
 
 }
 
 resource "aws_subnet" "publicsubnet2" {
   vpc_id                  = aws_vpc.this.id
-  cidr_block              = var.publicsubnet2-cidr-block
-  map_public_ip_on_launch = var.subnet-map-public-ip-on-launch
-  availability_zone       = var.availability-zone-2
+  cidr_block              = var.publicsubnet2_cidr_block
+  map_public_ip_on_launch = var.subnet_map_public_ip_on_launch
+  availability_zone       = var.availability_zone_2
 
 }
 
 resource "aws_subnet" "privatesubnet1" {
   vpc_id            = aws_vpc.this.id
-  cidr_block        = var.privatesubnet1-cidr-block
-  availability_zone = var.availability-zone-1
+  cidr_block        = var.privatesubnet1_cidr_block
+  availability_zone = var.availability_zone_1
 
 }
 
 resource "aws_subnet" "privatesubnet2" {
   vpc_id            = aws_vpc.this.id
-  cidr_block        = var.privatesubnet2-cidr-block
-  availability_zone = var.availability-zone-2
+  cidr_block        = var.privatesubnet2_cidr_block
+  availability_zone = var.availability_zone_2
 
 }
 
@@ -56,7 +56,7 @@ resource "aws_internet_gateway" "ig" {
 resource "aws_route_table" "public-rt" {
   vpc_id = aws_vpc.this.id
   route {
-    cidr_block = var.route-cidr-block
+    cidr_block = var.route_cidr_block
     gateway_id = aws_internet_gateway.ig.id
   }
 }
@@ -75,7 +75,7 @@ resource "aws_route_table" "private-rt" {
   vpc_id = aws_vpc.this.id
   # the below route is no longer needed as I have set up VPC Endpoints that will handle internal access to AWS Services
   # route {
-  #   cidr_block = var.route-cidr-block
+  #   cidr_block = var.route_cidr_block
   #   gateway_id = aws_nat_gateway.ng.id
   # }
 }
@@ -99,7 +99,7 @@ resource "aws_security_group" "vpc-endpoint" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = [var.privatesubnet1-cidr-block, var.privatesubnet2-cidr-block]
+    cidr_blocks = [var.privatesubnet1_cidr_block, var.privatesubnet2_cidr_block]
   }
 
   egress {

@@ -30,7 +30,7 @@ resource "aws_lb" "this" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = var.public-subnet-ids
+  subnets            = var.public_subnet_ids
 }
 
 resource "aws_alb_listener" "non_ssl" {

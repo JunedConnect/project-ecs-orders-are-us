@@ -1,4 +1,4 @@
-variable "aws-tags" {
+variable "aws_tags" {
   description = "Tags for Resources"
   type        = map(string)
 }
@@ -317,67 +317,67 @@ variable "sqs_max_receive_count" {
 
 # VPC
 
-variable "vpc-cidr-block" {
+variable "vpc_cidr_block" {
   description = "CIDR block for the VPC"
   type        = string
   default     = "10.2.0.0/16"
 }
 
-variable "publicsubnet1-cidr-block" {
+variable "publicsubnet1_cidr_block" {
   description = "CIDR block for public subnet 1"
   type        = string
   default     = "10.2.1.0/24"
 }
 
-variable "publicsubnet2-cidr-block" {
+variable "publicsubnet2_cidr_block" {
   description = "CIDR block for public subnet 2"
   type        = string
   default     = "10.2.2.0/24"
 }
 
-variable "privatesubnet1-cidr-block" {
+variable "privatesubnet1_cidr_block" {
   description = "CIDR block for private subnet 1"
   type        = string
   default     = "10.2.3.0/24"
 }
 
-variable "privatesubnet2-cidr-block" {
+variable "privatesubnet2_cidr_block" {
   description = "CIDR block for private subnet 2"
   type        = string
   default     = "10.2.4.0/24"
 }
 
-variable "enable-dns-support" {
+variable "enable_dns_support" {
   description = "Enable DNS support in the VPC"
   type        = bool
   default     = true
 }
 
-variable "enable-dns-hostnames" {
+variable "enable_dns_hostnames" {
   description = "Enable DNS hostnames in the VPC"
   type        = bool
   default     = true
 }
 
-variable "subnet-map-public-ip-on-launch" {
+variable "subnet_map_public_ip_on_launch" {
   description = "Whether to map public IP on launch for subnets"
   type        = bool
   default     = true
 }
 
-variable "availability-zone-1" {
+variable "availability_zone_1" {
   description = "Availability zone 1"
   type        = string
   default     = "eu-west-2a"
 }
 
-variable "availability-zone-2" {
+variable "availability_zone_2" {
   description = "Availability zone 2"
   type        = string
   default     = "eu-west-2b"
 }
 
-variable "route-cidr-block" {
+variable "route_cidr_block" {
   description = "CIDR block for the route"
   type        = string
   default     = "0.0.0.0/0"
