@@ -21,7 +21,7 @@ External traffic enters through the ALB. API routes (`/api/*`, `/auth/*`, `/heal
 Observability is handled by `Cloudwatch`: ECS and WAF logs are centralised in CloudWatch Log Groups, log patterns are converted to custom metrics via metric filters, and alarms cover application errors and infrastructure health. All alarms publish to an SNS topic that emails recipients.
 
 ### Multiple Environments
-Having separate dev and prod environments means you can break things freely in dev without any risk to prod. They have completely isolated Terraform state and ECR repositories. The dev environment also has a tighter feedback loop — pushing to the `dev` branch automatically triggers the Docker build and push pipeline for any changed services, whereas prod deployments are always manually triggered.
+Having separate dev and prod environments means you can break things freely in dev without any risk to prod. They have completely isolated Terraform state and ECR repositories. The dev environment also has a tighter feedback loop i.e. pushing to the `dev` branch automatically triggers the Docker build and push pipeline for any changed services, whereas prod deployments are always manually triggered.
 
 <br>
 
@@ -88,10 +88,10 @@ Subsequent status changes trigger further automation - shipment creation on `pro
 ## The Opinionated Bits
 
 ### Fargate over EC2-backed ECS
-With Fargate there are no EC2 instances to manage, patch, or right-size. Each service gets its own isolated compute and you only pay for what it uses. For a project like this where services have very different load profiles, it's a much cleaner fit than managing a shared EC2 cluster.
+With Fargate there are no EC2 instances to manage. Each service gets its own isolated compute and you only pay for what it uses. For a project like this where services have very different load profiles, it's a much cleaner fit than managing a shared EC2 cluster.
  
 ### CloudWatch over Prometheus + Grafana
-Prometheus and Grafana are great but they add operational overhead — you're running and maintaining extra infrastructure just to observe your actual infrastructure. for an AWS-native stack, you'd need exporters and additional config with Prometheus + Grafana, to get the similar coverage that CloudWatch gives you out of the box. Since everything here is already on AWS, CloudWatch is fully managed, natively integrated with ECS, RDS, ALB, and SQS, and is more-straightforward to set up.
+Prometheus and Grafana are great but they add operational overhead since you're running and maintaining extra infrastructure just to observe your actual infrastructure. for an AWS-native stack, you'd need exporters and additional config with Prometheus + Grafana, to get the similar coverage that CloudWatch gives you out of the box. Since everything here is already on AWS, CloudWatch is fully managed, natively integrated with ECS, RDS, ALB, and SQS, and is more straightforward to set up.
  
 ### VPC Endpoints over NAT Gateway
 All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the VPC rather than routing through the internet, which removes the need for a NAT Gateway and reduces both cost and attack surface.
@@ -149,7 +149,6 @@ All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the
    - Add GitHub as an OIDC identity provider in IAM (`https://token.actions.githubusercontent.com`)
    - Create an IAM role that trusts that provider, scoped to your repository (e.g. `repo:your-org/your-repo:*`)
    - Attach the permissions your workflows need (ECR push, ECS deploy, Terraform state access, etc.)
-   There's no Terraform for this - it's a one-time manual step that needs to exist before any automation can run.
 
 <br>
 
@@ -192,7 +191,7 @@ All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the
 
 Similarly, to deploy to the dev environment, choose the  `dev` when carrying out the above deployment steps.
 
-**Note for Dev Environment**: Pushing to the `dev` Git branch with changes under `services/**` automatically triggers the Docker Build & Push workflow. It detects which services changed, builds only those images, scans them with Trivy, and pushes them to the dev ECR repositories (`dev-<service>:latest`). For a first-time dev environment deployment, still run bootstrap and Terraform Apply for `dev` manually before relying on automatic image builds.
+**Note for Dev Environment**: Pushing to the `dev` Git branch with changes under `services/**` automatically triggers the Docker Build & Push workflow. It detects which services changed, builds only those images, scans them with Trivy, and pushes them to the dev ECR repositories (`dev-<service>:latest`). For a first time dev environment deployment, you will still run bootstrap and Terraform Apply for `dev` manually before relying on automatic Docker image builds.
 
 3. **Verify Deployment**
    - Check ECS services are running in the AWS Console
@@ -255,7 +254,7 @@ export TOKEN="eyJhbGciOiJIUzI1NiIs..."
 curl "https://<route53_domain_name>/healthz"
 ```
 
-**Create a Product** (required before placing an order - there is no seed data)
+**Create a Product** (required before placing an order, there is no seed data)
 ```bash
 curl -X POST "https://<route53_domain_name>/api/inventory/products" \
   -H "Content-Type: application/json" \
@@ -357,14 +356,12 @@ terraform destroy -var-file="prod-bootstrap.tfvars"
 
 ## Notes
 
-- Some security group rules and WAF configurations are intentionally permissive for lab purposes. For production, restrict CIDRs and tighten WAF rules appropriately.
-- ECS services use `lifecycle { ignore_changes = [task_definition, desired_count] }` so that CI/CD image updates and scaling changes made outside Terraform are not reverted on the next apply.
 - JWT authentication in the API gateway accepts any email/password combination for demonstration purposes. In production, integrate with a proper identity provider.
 - Bootstrap must be applied before deployment. Deployment Terraform relies on the S3 backend bucket and ECR repositories created during bootstrap.
-- Bootstrap and deployment each support separate `dev` and `prod` environments. Run bootstrap locally for each environment before deploying that environment's infrastructure.
+- Bootstrap and deployment each support separate `dev` and `prod` environments. Run bootstrap locally for each environment before deploying the respective environment's deployment infrastructure.
 
 <br>
 
 ## Possible Improvements
 
-- **Distributed tracing** - Add OpenTelemetry or AWS X-Ray across the api-gateway and microservices to trace requests and SQS-driven saga steps end to end, making it easier to debug slow or failed order flows across service boundaries.
+- **Distributed tracing** - Add OpenTelemetry or AWS X-Ray across the api-gateway and microservices to trace requests end-to-end, making it easier to debug slow or failed order flows across service boundaries.
