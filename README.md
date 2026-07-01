@@ -88,10 +88,10 @@ Subsequent status changes trigger further automation - shipment creation on `pro
 ## The Opinionated Bits
 
 ### Fargate over EC2-backed ECS
-With Fargate there are no EC2 instances to manage. Each service gets its own isolated compute and you only pay for what it uses. For a project like this where services have very different load profiles, it's a much cleaner fit than managing a shared EC2 cluster.
+With Fargate there are no EC2 instances to manage. Each service gets its own isolated compute and you only pay for what it uses. The downside is that you have less control over the actual intrastructure that the ECS tasks are running within, but you have less overhead from a infrastructure management perspective.
  
 ### CloudWatch over Prometheus + Grafana
-Prometheus and Grafana are great but they add operational overhead since you're running and maintaining extra infrastructure just to observe your actual infrastructure. for an AWS-native stack, you'd need exporters and additional config with Prometheus + Grafana, to get the similar coverage that CloudWatch gives you out of the box. Since everything here is already on AWS, CloudWatch is fully managed, natively integrated with ECS, RDS, ALB, and SQS, and is more straightforward to set up.
+Prometheus and Grafana are great but they add operational overhead since you're running and maintaining extra infrastructure just to observe your actual infrastructure. for an AWS-native stack, you'd need exporters and additional config with Prometheus + Grafana, to get similar coverage that CloudWatch gives you out of the box. Since everything here is already on AWS, CloudWatch is fully managed, natively integrated with ECS, RDS, ALB, and SQS, and is more straightforward to set up.
  
 ### VPC Endpoints over NAT Gateway
 All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the VPC rather than routing through the internet, which removes the need for a NAT Gateway and reduces both cost and attack surface.
@@ -133,31 +133,23 @@ All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the
    ```
 
    **Bootstrap apply**
-
-   ```bash
-   cd terraform/bootstrap/environments/prod
-   terraform init
-   terraform apply -var-file="prod-bootstrap.tfvars"
-   ```
-
-      **Bootstrap apply**
  
-```bash
-   cd terraform/bootstrap/environments/prod
+   ```bash
+   cd terraform/bootstrap/environments/prod # or dev
    terraform init
-```
+   ```
  
    The Route53 hosted zone must exist before Cloudflare can be updated with the delegation nameservers, so target it first:
  
-```bash
-   terraform apply -var-file="prod-bootstrap.tfvars" -target=module.domain.aws_route53_zone.this
-```
+   ```bash
+   terraform apply -var-file="prod-bootstrap.tfvars" -target=module.domain.aws_route53_zone.this # or dev-bootstrap.tfvars
+   ```
  
    Then run the full apply:
  
-```bash
-   terraform apply -var-file="prod-bootstrap.tfvars"
-```
+   ```bash
+   terraform apply -var-file="prod-bootstrap.tfvars" # or dev-bootstrap.tfvars
+   ```
 
    This creates ECR repositories, the S3 Terraform state bucket for deployment, and delegates the Route53 subdomain from Cloudflare.
 
@@ -198,19 +190,22 @@ All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the
 1. **Build and Push Docker Images**
    - Go to GitHub Actions → Docker Build & Push → Run workflow
    - Choose `all` to build every service, or select an individual service
-   - Choose `prod`
+   - Choose `prod` or `dev`
+
+<br>
 
 2. **Deploy Infrastructure**
    - Go to GitHub Actions → Terraform Plan → Run workflow
-     - Choose `prod`
+     - Choose `prod` or `dev`
      - Review the plan output to ensure everything looks correct
    - Go to GitHub Actions → Terraform Apply → Run workflow
-     - Choose `prod`
+     - Choose `prod` or `dev`
      - This provisions VPC, ECS services, RDS, ElastiCache, SQS, CloudWatch, SNS, ALB, WAF, and Route53 records
 
-Similarly, to deploy to the dev environment, choose the  `dev` when carrying out the above deployment steps.
 
-**Note for Dev Environment**: Pushing to the `dev` Git branch with changes under `services/**` automatically triggers the Docker Build & Push workflow. It detects which services changed, builds only those images, scans them with Trivy, and pushes them to the dev ECR repositories (`dev-<service>:latest`). For a first time dev environment deployment, you will still run bootstrap and Terraform Apply for `dev` manually before relying on automatic Docker image builds.
+**Note for Dev Environment**: Pushing to the `dev` Git branch with changes under `services/**` automatically triggers the Docker Build & Push workflow. It detects which services changed, builds only those images, scans them with Trivy, and pushes them to the dev ECR repositories. For a first time dev environment deployment, you will still run bootstrap and Terraform Apply for `dev` manually before relying on automatic Docker image builds.
+
+<br>
 
 3. **Verify Deployment**
    - Check ECS services are running in the AWS Console
@@ -219,18 +214,22 @@ Similarly, to deploy to the dev environment, choose the  `dev` when carrying out
    - Dashboard: `https://<route53_domain_name>/dashboard`
    - Optionally run `./test-metrics.sh` to validate CloudWatch alarms and metric data (configure the script variables for your environment first)
 
+<br>
+
 4. **Destroy Infrastructure**
    - Go to GitHub Actions → Terraform Destroy → Run workflow
      - Choose the same environment used for deployment
      - This removes all deployment resources (bootstrap resources are unaffected)
 
+<br>
+
 5. **Destroy Bootstrap** (only when fully decommissioning)
    - Run locally after destroying deployment infrastructure for that environment:
    ```bash
-   cd terraform/bootstrap/environments/prod
-   terraform destroy -var-file="prod-bootstrap.tfvars"
+   cd terraform/bootstrap/environments/prod # or dev
+   terraform destroy -var-file="prod-bootstrap.tfvars" # or dev-bootstrap.tfvars
    ```
-   - This removes ECR repositories and the S3 state bucket for that environment
+   - This removes all bootstrap resources
 
 <br>
 
@@ -351,24 +350,6 @@ curl "https://<route53_domain_name>/dashboard/orders/stats"
 curl "https://<route53_domain_name>/dashboard/revenue"
 curl "https://<route53_domain_name>/dashboard/inventory/alerts"
 curl "https://<route53_domain_name>/dashboard/shipping/overview"
-```
-
-<br>
-
-## Cleanup
-
-**Destroy application infrastructure** (via GitHub Actions Terraform Destroy workflow, or locally):
-
-```bash
-cd terraform/deployment/environments/prod
-terraform destroy -var-file="prod.tfvars"
-```
-
-**Destroy bootstrap resources** (run locally after deployment infrastructure is destroyed - only when fully decommissioning):
-
-```bash
-cd terraform/bootstrap/environments/prod
-terraform destroy -var-file="prod-bootstrap.tfvars"
 ```
 
 <br>
