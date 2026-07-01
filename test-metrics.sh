@@ -4,13 +4,13 @@
 # -------------------------------------------------------
 # CONFIG
 # -------------------------------------------------------
-ALB_URL="https://prod.juned.co.uk"
-ENVIRONMENT="prod"
-CLUSTER="prod-ecs-cluster"
+ALB_URL="https://dev.juned.co.uk"
+ENVIRONMENT="dev"
+CLUSTER="dev-ecs-cluster"
 REGION="eu-west-2"
 NAMESPACE="OrderPlatform/${ENVIRONMENT}"
-SQS_QUEUE_NAME="prod-sqs-main-queue"
-RDS_IDENTIFIER="prod-rds"
+SQS_QUEUE_NAME="dev-sqs-main-queue"
+RDS_IDENTIFIER="dev-rds"
 
 # -------------------------------------------------------
 # HELPERS
