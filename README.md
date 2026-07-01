@@ -384,6 +384,7 @@ terraform destroy -var-file="prod-bootstrap.tfvars"
 ## Possible Improvements
 
 - **Distributed tracing** - Add OpenTelemetry or AWS X-Ray across the api-gateway and microservices to trace requests end-to-end, making it easier to debug slow or failed order flows across service boundaries.
+- **ECS autoscaling** - Add Application Auto Scaling policies for the ECS services so task counts can increase or decrease automatically based on metrics such as CPU, memory, request count, or queue depth.
 
 <br>
 
