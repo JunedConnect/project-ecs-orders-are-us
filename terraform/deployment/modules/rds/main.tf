@@ -34,14 +34,16 @@ resource "aws_db_instance" "this" {
   identifier = "${var.environment}-rds"
   db_name    = "orders"
 
-  allocated_storage    = var.allocated_storage
   engine               = "postgres"
   engine_version       = var.engine_version
   instance_class       = var.instance_class
   username             = var.db_username
   password             = random_password.db_password.result
   parameter_group_name = var.parameter_group_name
+
+  allocated_storage    = var.allocated_storage
   skip_final_snapshot  = var.skip_final_snapshot
+  final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.environment}-rds-final-snapshot"
   storage_encrypted    = var.storage_encrypted
   multi_az             = var.multi_az
 
