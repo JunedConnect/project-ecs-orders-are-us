@@ -16,9 +16,28 @@ This project demonstrates a **production-style microservices platform** for orde
 
 ## Architecture
 
-External traffic enters through the ALB. API routes (`/api/*`, `/auth/*`, `/healthz`, `/livez`) go to the api-gateway; the dashboard UI and `/dashboard/*` routes go directly to dashboard-api. Internal services communicate via Cloud Map DNS and publish/consume events through SQS.
+![AD](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/architecture-diagram.png)
 
-Observability is handled by `Cloudwatch`: ECS and WAF logs are centralised in CloudWatch Log Groups, log patterns are converted to custom metrics via metric filters, and alarms cover application errors and infrastructure health. All alarms publish to an SNS topic that emails recipients.
+<br>
+
+|Here's what it will look like:|
+|-------|
+|Architecture Diagram:|
+| ![Architecture Diagram](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/architecture-diagram.png) |
+|Dashboard Service Health:|
+| ![Dashboard Service Health](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/dashboard-service-health.png) |
+|Dashboard Orders:|
+| ![Dashboard Orders](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/dashboard-order.png) |
+|Dashboard Inventory:|
+| ![Dashboard Inventory](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/dashboard-inventory.png) |
+|Dashboard Payments:|
+| ![Dashboard Payments](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/dashboard-payment.png) |
+|Dashboard Shipping:|
+| ![Dashboard Shipping](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/dashboard-shipping.png) |
+|Dashboard Notifications:|
+| ![Dashboard Notifications](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/dashboard-notification.png) |
+|SNS Notification:|
+| ![SNS Notification](https://raw.githubusercontent.com/JunedConnect/project-ecs-orders-are-us/main/images/sns-notification.png) |
 
 ### Multiple Environments
 Having separate dev and prod environments means you can break things freely in dev without any risk to prod. They have completely isolated Terraform state and ECR repositories. The dev environment also has a tighter feedback loop i.e. pushing to the `dev` branch automatically triggers the Docker build and push pipeline for any changed services, whereas prod deployments are always manually triggered.
