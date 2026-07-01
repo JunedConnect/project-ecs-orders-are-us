@@ -192,7 +192,7 @@ variable "worker_desired_count" {
 variable "elasticache_node_type" {
   description = "ElastiCache node type"
   type        = string
-  default     = "cache.m4.large"
+  default     = "cache.t4g.micro"
 }
 
 variable "elasticache_num_cache_nodes" {
@@ -243,6 +243,7 @@ variable "rds_parameter_group_name" {
 variable "rds_skip_final_snapshot" {
   description = "Determines whether a final DB snapshot is created before the DB instance is deleted. If true is specified, no DB snapshot is created. If false is specified, a DB snapshot is created before the DB instance is deleted."
   type        = bool
+  default     = false
 }
 
 variable "rds_username" {
@@ -259,6 +260,7 @@ variable "rds_storage_encrypted" {
 variable "rds_multi_az" {
   description = "Whether RDS should be deployed Multi-AZ"
   type        = bool
+  default     = true
 }
 
 
@@ -385,20 +387,3 @@ variable "route_cidr_block" {
 
 
 # WAF
-
-variable "waf_cloudwatch_metrics_enabled" {
-  description = "Whether CloudWatch metrics are enabled for WAF visibility config"
-  type        = bool
-  default     = true
-}
-
-variable "waf_sampled_requests_enabled" {
-  description = "Whether sampled requests are enabled for WAF visibility config"
-  type        = bool
-  default     = true
-}
-
-variable "waf_metric_name" {
-  description = "Metric name for WAF visibility config"
-  type        = string
-}

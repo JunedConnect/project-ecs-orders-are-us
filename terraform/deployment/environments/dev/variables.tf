@@ -6,7 +6,7 @@ variable "aws_tags" {
 variable "secrets_recovery_window_in_days" {
   description = "Number of days Secrets Manager keeps deleted secrets recoverable"
   type        = number
-  default     = 7
+  default     = 0
 }
 
 variable "cloudwatch_alarm_email_endpoint" {
@@ -84,7 +84,7 @@ variable "ecs_task_memory" {
 variable "enable_execute_command" {
   description = "Whether ECS Exec is enabled for ECS services"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "api_gateway_image" {
@@ -95,7 +95,7 @@ variable "api_gateway_image" {
 variable "api_gateway_desired_count" {
   description = "API Gateway desired task count"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "dashboard_api_image" {
@@ -243,6 +243,7 @@ variable "rds_parameter_group_name" {
 variable "rds_skip_final_snapshot" {
   description = "Determines whether a final DB snapshot is created before the DB instance is deleted. If true is specified, no DB snapshot is created. If false is specified, a DB snapshot is created before the DB instance is deleted."
   type        = bool
+  default     = true
 }
 
 variable "rds_username" {
@@ -259,6 +260,7 @@ variable "rds_storage_encrypted" {
 variable "rds_multi_az" {
   description = "Whether RDS should be deployed Multi-AZ"
   type        = bool
+  default     = false
 }
 
 
@@ -299,7 +301,7 @@ variable "sqs_main_queue_max_message_size" {
 variable "sqs_main_queue_message_retention_seconds" {
   description = "Message retention period in seconds for the main SQS queue"
   type        = number
-  default     = 345600
+  default     = 86400
 }
 
 variable "sqs_main_queue_receive_wait_time_seconds" {
@@ -320,31 +322,31 @@ variable "sqs_max_receive_count" {
 variable "vpc_cidr_block" {
   description = "CIDR block for the VPC"
   type        = string
-  default     = "10.2.0.0/16"
+  default     = "172.20.0.0/16"
 }
 
 variable "publicsubnet1_cidr_block" {
   description = "CIDR block for public subnet 1"
   type        = string
-  default     = "10.2.1.0/24"
+  default     = "172.20.1.0/24"
 }
 
 variable "publicsubnet2_cidr_block" {
   description = "CIDR block for public subnet 2"
   type        = string
-  default     = "10.2.2.0/24"
+  default     = "172.20.2.0/24"
 }
 
 variable "privatesubnet1_cidr_block" {
   description = "CIDR block for private subnet 1"
   type        = string
-  default     = "10.2.3.0/24"
+  default     = "172.20.3.0/24"
 }
 
 variable "privatesubnet2_cidr_block" {
   description = "CIDR block for private subnet 2"
   type        = string
-  default     = "10.2.4.0/24"
+  default     = "172.20.4.0/24"
 }
 
 variable "enable_dns_support" {
@@ -385,20 +387,3 @@ variable "route_cidr_block" {
 
 
 # WAF
-
-variable "waf_cloudwatch_metrics_enabled" {
-  description = "Whether CloudWatch metrics are enabled for WAF visibility config"
-  type        = bool
-  default     = true
-}
-
-variable "waf_sampled_requests_enabled" {
-  description = "Whether sampled requests are enabled for WAF visibility config"
-  type        = bool
-  default     = true
-}
-
-variable "waf_metric_name" {
-  description = "Metric name for WAF visibility config"
-  type        = string
-}
