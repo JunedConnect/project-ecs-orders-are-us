@@ -103,10 +103,10 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	// In production this would validate against a user database
 	// For this project, accept any email/password and return a JWT
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":   req.Email,
-		"role":  "customer",
-		"exp":   time.Now().Add(24 * time.Hour).Unix(),
-		"iat":   time.Now().Unix(),
+		"sub":  req.Email,
+		"role": "customer",
+		"exp":  time.Now().Add(24 * time.Hour).Unix(),
+		"iat":  time.Now().Unix(),
 	})
 
 	tokenString, err := token.SignedString(jwtSecret)
@@ -173,7 +173,7 @@ func handleProxy(w http.ResponseWriter, r *http.Request) {
 		if count == 1 {
 			redisClient.Expire(ctx, key, time.Minute)
 		}
-		limit := 100 // requests per minute
+		limit := 1000 // requests per minute
 		if count > int64(limit) {
 			httpError(w, "rate limit exceeded", http.StatusTooManyRequests)
 			return
@@ -307,5 +307,3 @@ func gracefulShutdown(server *http.Server) {
 		server.Shutdown(ctx)
 	})
 }
-
-
