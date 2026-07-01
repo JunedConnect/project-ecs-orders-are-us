@@ -1,6 +1,12 @@
 name: Docker Build & Push
 
 on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'services/**'
+
   workflow_dispatch:
     inputs:
       image_choice:
@@ -8,6 +14,7 @@ on:
         required: true
         type: choice
         options:
+          - all
           - api-gateway
           - dashboard-api
           - inventory-service
@@ -26,7 +33,8 @@ on:
           - prod
 
 jobs:
-    docker-build:
+    docker-build-manual:
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.image_choice != 'all' }}
         runs-on: ubuntu-24.04
         defaults:
             run:
@@ -43,7 +51,7 @@ jobs:
               uses: aws-actions/configure-aws-credentials@v4
               with:
                 role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
-                role-session-name: github-actions-session
+                role-session-name: github-actions-docker-session
                 aws-region: eu-west-2
 
             - name: Login to AWS ECR
@@ -75,3 +83,158 @@ jobs:
 
             - name: Pushing docker image
               run: docker push ${{ secrets.ECR_REPOSITORY }}/${{ inputs.environment }}-${{ inputs.image_choice }} --all-tags
+
+    docker-build-manual-all:
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.image_choice == 'all' }}
+        runs-on: ubuntu-24.04
+        strategy:
+            fail-fast: false
+            matrix:
+                service:
+                  - api-gateway
+                  - dashboard-api
+                  - inventory-service
+                  - notification-service
+                  - order-service
+                  - payment-service
+                  - scheduler
+                  - shipping-service
+                  - worker
+        defaults:
+            run:
+                working-directory: "./services/${{ matrix.service }}"
+        permissions:
+            security-events: write
+            id-token: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Login to AWS
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
+                role-session-name: github-actions-docker-session
+                aws-region: eu-west-2
+
+            - name: Login to AWS ECR
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Build
+              run: |
+                docker build -t ${{ matrix.service }} .
+
+            - name: Tagging image to ECR repository
+              run: |
+                docker tag ${{ matrix.service }} ${{ secrets.ECR_REPOSITORY }}/${{ inputs.environment }}-${{ matrix.service }}:${{ github.sha }}
+                docker tag ${{ matrix.service }} ${{ secrets.ECR_REPOSITORY }}/${{ inputs.environment }}-${{ matrix.service }}:latest
+
+            - name: Trivy Scan
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                image-ref: ${{ matrix.service }}
+                severity: 'CRITICAL,HIGH'
+                format: 'sarif'
+                output: 'trivy-results-${{ matrix.service }}-Docker.sarif'
+                exit-code: 0
+
+            - name: Upload Trivy scan results to GitHub Security tab
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                sarif_file: 'trivy-results-${{ matrix.service }}-Docker.sarif'
+                wait-for-processing: true
+
+            - name: Pushing docker image
+              run: docker push ${{ secrets.ECR_REPOSITORY }}/${{ inputs.environment }}-${{ matrix.service }} --all-tags
+
+    detect-dev-service-changes:
+        if: ${{ github.event_name == 'push' }}
+        runs-on: ubuntu-24.04
+        outputs:
+            services: ${{ steps.filter.outputs.changes }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Detect changed services
+              id: filter
+              uses: dorny/paths-filter@v4
+              with:
+                filters: |
+                  api-gateway:
+                    - 'services/api-gateway/**'
+                  dashboard-api:
+                    - 'services/dashboard-api/**'
+                  inventory-service:
+                    - 'services/inventory-service/**'
+                  notification-service:
+                    - 'services/notification-service/**'
+                  order-service:
+                    - 'services/order-service/**'
+                  payment-service:
+                    - 'services/payment-service/**'
+                  scheduler:
+                    - 'services/scheduler/**'
+                  shipping-service:
+                    - 'services/shipping-service/**'
+                  worker:
+                    - 'services/worker/**'
+
+
+    auto-docker-build-dev:
+        if: ${{ github.event_name == 'push' && needs.detect-dev-service-changes.outputs.services != '[]' }}
+        needs: detect-dev-service-changes
+        runs-on: ubuntu-24.04
+        strategy:
+            fail-fast: false
+            matrix:
+                service: ${{ fromJson(needs.detect-dev-service-changes.outputs.services) }}
+        defaults:
+            run:
+                working-directory: "./services/${{ matrix.service }}"
+        permissions:
+            security-events: write
+            id-token: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Login to AWS
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
+                role-session-name: github-actions-docker-session
+                aws-region: eu-west-2
+
+            - name: Login to AWS ECR
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Build
+              run: |
+                docker build -t ${{ matrix.service }} .
+
+            - name: Tagging image to dev ECR repository
+              run: |
+                docker tag ${{ matrix.service }} ${{ secrets.ECR_REPOSITORY }}/dev-${{ matrix.service }}:${{ github.sha }}
+                docker tag ${{ matrix.service }} ${{ secrets.ECR_REPOSITORY }}/dev-${{ matrix.service }}:latest
+
+            - name: Trivy Scan
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                image-ref: ${{ matrix.service }}
+                severity: 'CRITICAL,HIGH'
+                format: 'sarif'
+                output: 'trivy-results-${{ matrix.service }}-Docker.sarif'
+                exit-code: 0
+
+            - name: Upload Trivy scan results to GitHub Security tab
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                sarif_file: 'trivy-results-${{ matrix.service }}-Docker.sarif'
+                wait-for-processing: true
+
+            - name: Pushing docker image
+              run: docker push ${{ secrets.ECR_REPOSITORY }}/dev-${{ matrix.service }} --all-tags

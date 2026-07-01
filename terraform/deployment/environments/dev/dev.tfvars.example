@@ -1,0 +1,104 @@
+# General
+aws_tags = {
+  Environment = "dev"
+  Project     = "orders-are-us"
+  Owner       = "juned"
+  Terraform   = "true"
+}
+
+# ALB
+api_gateway_target_group_health_check_path = "/healthz"
+api_gateway_listener_path_patterns         = ["/api/*", "/auth/*", "/healthz", "/livez"]
+dashboard_target_group_health_check_path   = "/dashboard/healthz"
+dashboard_listener_path_patterns           = ["/", "/dashboard", "/dashboard/*", "/dashboard/healthz"]
+
+# CloudWatch
+cloudwatch_alarm_email_endpoint = "junedwork@hotmail.com"
+
+# ECS
+ecs_launch_type                   = "FARGATE"
+ecs_platform_version              = "1.4.0"
+ecs_scheduling_strategy           = "REPLICA"
+ecs_task_requires_compatibilities = ["FARGATE"]
+ecs_network_mode                  = "awsvpc"
+ecs_task_cpu                      = 256
+ecs_task_memory                   = 512
+enable_execute_command            = true
+secrets_recovery_window_in_days   = 0
+
+# ECS - API Gateway
+api_gateway_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-api-gateway:latest"
+api_gateway_desired_count = 1
+
+# ECS - Dashboard API
+dashboard_api_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-dashboard-api:latest"
+dashboard_api_desired_count = 1
+
+# ECS - Inventory Service
+inventory_service_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-inventory-service:latest"
+inventory_service_desired_count = 1
+
+# ECS - Notification Service
+notification_service_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-notification-service:latest"
+notification_service_desired_count = 1
+
+# ECS - Order Service
+order_service_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-order-service:latest"
+order_service_desired_count = 1
+
+# ECS - Payment Service
+payment_service_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-payment-service:latest"
+payment_service_desired_count = 1
+
+# ECS - Scheduler
+scheduler_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-scheduler:latest"
+scheduler_desired_count = 1
+
+# ECS - Shipping Service
+shipping_service_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-shipping-service:latest"
+shipping_service_desired_count = 1
+
+# ECS - Worker
+worker_image         = "677276074604.dkr.ecr.eu-west-2.amazonaws.com/dev-worker:latest"
+worker_desired_count = 1
+
+# ElastiCache
+elasticache_node_type            = "cache.t4g.micro"
+elasticache_num_cache_nodes      = 1
+elasticache_parameter_group_name = "default.redis7"
+elasticache_engine_version       = "7.1"
+
+# RDS
+rds_allocated_storage    = 10
+rds_engine_version       = "16.14"
+rds_instance_class       = "db.t3.micro"
+rds_parameter_group_name = "default.postgres16"
+rds_skip_final_snapshot  = true
+rds_username             = "foo"
+rds_storage_encrypted    = true
+rds_multi_az             = false
+
+# Route53
+route53_domain_name = "dev.juned.co.uk"
+validation_method   = "DNS"
+dns_ttl             = 60
+
+# SQS
+sqs_main_queue_delay_seconds             = 0
+sqs_main_queue_max_message_size          = 262144
+sqs_main_queue_message_retention_seconds = 86400
+sqs_main_queue_receive_wait_time_seconds = 0
+sqs_max_receive_count                    = 4
+
+# VPC
+vpc_cidr_block                 = "172.20.0.0/16"
+publicsubnet1_cidr_block       = "172.20.1.0/24"
+publicsubnet2_cidr_block       = "172.20.2.0/24"
+privatesubnet1_cidr_block      = "172.20.3.0/24"
+privatesubnet2_cidr_block      = "172.20.4.0/24"
+enable_dns_support             = true
+enable_dns_hostnames           = true
+subnet_map_public_ip_on_launch = true
+availability_zone_1            = "eu-west-2a"
+availability_zone_2            = "eu-west-2b"
+route_cidr_block               = "0.0.0.0/0"

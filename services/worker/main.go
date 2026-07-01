@@ -1,14 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
 // Event represents a message from SQS
@@ -18,11 +23,24 @@ type Event struct {
 	Timestamp string                 `json:"timestamp"`
 }
 
+type QueueMessage struct {
+	Body          string
+	ReceiptHandle string
+}
+
+var sqsClient *sqs.Client
+
 func main() {
 	sqsQueue := os.Getenv("SQS_QUEUE_URL")
 	if sqsQueue == "" {
 		log.Fatal("SQS_QUEUE_URL is required")
 	}
+
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		log.Fatalf("failed to load AWS config: %v", err)
+	}
+	sqsClient = sqs.NewFromConfig(cfg)
 
 	// Internal service URLs for event-driven calls
 	services := map[string]string{
@@ -73,9 +91,9 @@ func pollAndProcess(ctx context.Context, queueURL string, services map[string]st
 		default:
 			messages := receiveSQSMessages(ctx, queueURL)
 
-			for _, raw := range messages {
+			for _, message := range messages {
 				var event Event
-				if err := json.Unmarshal([]byte(raw), &event); err != nil {
+				if err := json.Unmarshal([]byte(message.Body), &event); err != nil {
 					log.Printf("Failed to parse event: %v", err)
 					continue
 				}
@@ -89,7 +107,7 @@ func pollAndProcess(ctx context.Context, queueURL string, services map[string]st
 				}
 
 				log.Printf("Successfully processed: %s", event.Type)
-				// Delete message from SQS after successful processing
+				deleteSQSMessage(ctx, queueURL, message.ReceiptHandle)
 			}
 
 			if len(messages) == 0 {
@@ -103,86 +121,195 @@ func handleEvent(client *http.Client, services map[string]string, event Event) e
 	switch event.Type {
 
 	case "order.created":
-		// 1. Reserve inventory
 		log.Printf("  -> Reserving inventory for order")
-		// POST to inventory-service/reserve with order items
-		// If reservation fails, update order status to "cancelled"
+		if err := postJSON(client, services["inventory"]+"/reserve", map[string]interface{}{
+			"order_id": event.Payload["order_id"],
+			"items":    event.Payload["items"],
+		}); err != nil {
+			log.Printf("  -> Inventory reservation failed: %v", err)
+			_ = putJSON(client, services["order"]+"/status", map[string]interface{}{
+				"order_id":   event.Payload["order_id"],
+				"new_status": "cancelled",
+			})
+			return nil
+		}
 
-		// 2. Process payment
 		log.Printf("  -> Processing payment")
-		// POST to payment-service/charge
-		// If payment fails, release inventory reservation
+		if err := postJSON(client, services["payment"]+"/charge", map[string]interface{}{
+			"order_id":    event.Payload["order_id"],
+			"customer_id": event.Payload["customer_id"],
+			"amount":      event.Payload["total"],
+			"currency":    event.Payload["currency"],
+			"method":      "card",
+		}); err != nil {
+			log.Printf("  -> Payment failed: %v", err)
+			_ = postJSON(client, services["inventory"]+"/release", map[string]interface{}{
+				"order_id": event.Payload["order_id"],
+			})
+			_ = putJSON(client, services["order"]+"/status", map[string]interface{}{
+				"order_id":   event.Payload["order_id"],
+				"new_status": "cancelled",
+			})
+			_ = postJSON(client, services["notification"]+"/send", map[string]interface{}{
+				"recipient": event.Payload["customer_id"],
+				"channel":   "email",
+				"template":  "payment_failed",
+				"data":      event.Payload,
+			})
+			return nil
+		}
 
-		// 3. Send confirmation notification
 		log.Printf("  -> Sending order confirmation")
-		// POST to notification-service/send with order_confirmed template
+		_ = postJSON(client, services["notification"]+"/send", map[string]interface{}{
+			"recipient": event.Payload["customer_id"],
+			"channel":   "email",
+			"template":  "order_confirmed",
+			"data":      event.Payload,
+		})
 
-		// 4. Update order to confirmed
 		log.Printf("  -> Confirming order")
-		// PUT to order-service/status with new_status: "confirmed"
+		return putJSON(client, services["order"]+"/status", map[string]interface{}{
+			"order_id":   event.Payload["order_id"],
+			"new_status": "confirmed",
+		})
 
 	case "order.status_changed":
 		newStatus, _ := event.Payload["new_status"].(string)
 
 		switch newStatus {
 		case "processing":
-			// Create shipment
 			log.Printf("  -> Creating shipment for order")
-			// POST to shipping-service/shipments
+			return postJSON(client, services["shipping"]+"/shipments", map[string]interface{}{
+				"order_id":       event.Payload["order_id"],
+				"recipient_name": event.Payload["customer_id"],
+				"address_line1":  "Unknown",
+				"city":           "Unknown",
+				"postcode":       "UNKNOWN",
+				"country":        "GB",
+				"weight_kg":      1,
+			})
 
 		case "shipped":
-			// Notify customer
 			log.Printf("  -> Sending shipping notification")
-			// POST to notification-service/send with order_shipped template
+			return postJSON(client, services["notification"]+"/send", map[string]interface{}{
+				"recipient": event.Payload["customer_id"],
+				"channel":   "email",
+				"template":  "order_shipped",
+				"data":      event.Payload,
+			})
 
 		case "delivered":
 			log.Printf("  -> Sending delivery notification")
-			// POST to notification-service/send with order_delivered template
+			return postJSON(client, services["notification"]+"/send", map[string]interface{}{
+				"recipient": event.Payload["customer_id"],
+				"channel":   "email",
+				"template":  "order_delivered",
+				"data":      event.Payload,
+			})
 
 		case "cancelled":
-			// Release inventory
 			log.Printf("  -> Releasing inventory reservation")
-			// POST to inventory-service/release
+			if err := postJSON(client, services["inventory"]+"/release", map[string]interface{}{
+				"order_id": event.Payload["order_id"],
+			}); err != nil {
+				return err
+			}
 
-			// Process refund if payment was made
+			if event.Payload["payment_id"] == nil {
+				return nil
+			}
 			log.Printf("  -> Processing refund")
-			// POST to payment-service/refund
+			return postJSON(client, services["payment"]+"/refund", map[string]interface{}{
+				"payment_id": fmt.Sprintf("%v", event.Payload["payment_id"]),
+				"reason":     "order cancelled",
+			})
 		}
 
 	case "payment.completed":
-		log.Printf("  -> Payment successful, confirming order")
-		// Update order status to confirmed
+		log.Printf("  -> Payment successful")
 
 	case "payment.failed":
-		log.Printf("  -> Payment failed, cancelling order")
-		// Release inventory reservation
-		// Update order status to cancelled
-		// Send payment failed notification
+		log.Printf("  -> Payment failed")
 
 	case "shipment.created":
-		log.Printf("  -> Shipment created, updating order to processing")
-		// Update order status
+		log.Printf("  -> Shipment created")
 
 	case "shipment.delivered":
 		log.Printf("  -> Shipment delivered, updating order")
-		// Update order status to delivered
-		// Send delivery notification
+		return putJSON(client, services["order"]+"/status", map[string]interface{}{
+			"order_id":   event.Payload["order_id"],
+			"new_status": "delivered",
+		})
 
 	default:
 		log.Printf("  -> Unknown event type: %s (skipping)", event.Type)
 	}
 
-	_ = client
-	_ = services
 	return nil
 }
 
-func receiveSQSMessages(ctx context.Context, queueURL string) []string {
-	// Students implement with AWS SDK SQS ReceiveMessage
-	// Use long polling: WaitTimeSeconds = 20
-	// MaxNumberOfMessages = 10
-	// Honour ctx during the long-poll so SIGTERM unblocks cleanly
-	_ = ctx
+func receiveSQSMessages(ctx context.Context, queueURL string) []QueueMessage {
+	resp, err := sqsClient.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:            &queueURL,
+		MaxNumberOfMessages: 10,
+		WaitTimeSeconds:     20,
+	})
+	if err != nil {
+		log.Printf("Failed to receive SQS messages: %v", err)
+		return nil
+	}
+
+	messages := make([]QueueMessage, 0, len(resp.Messages))
+	for _, msg := range resp.Messages {
+		if msg.Body == nil || msg.ReceiptHandle == nil {
+			continue
+		}
+		messages = append(messages, QueueMessage{
+			Body:          *msg.Body,
+			ReceiptHandle: *msg.ReceiptHandle,
+		})
+	}
+	return messages
+}
+
+func deleteSQSMessage(ctx context.Context, queueURL, receiptHandle string) {
+	if _, err := sqsClient.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      &queueURL,
+		ReceiptHandle: &receiptHandle,
+	}); err != nil {
+		log.Printf("Failed to delete SQS message: %v", err)
+	}
+}
+
+func postJSON(client *http.Client, url string, payload interface{}) error {
+	return sendJSON(client, http.MethodPost, url, payload)
+}
+
+func putJSON(client *http.Client, url string, payload interface{}) error {
+	return sendJSON(client, http.MethodPut, url, payload)
+}
+
+func sendJSON(client *http.Client, method, url string, payload interface{}) error {
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("%s %s returned %s", method, url, resp.Status)
+	}
 	return nil
 }
 

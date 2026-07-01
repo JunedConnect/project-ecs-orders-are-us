@@ -13,10 +13,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	_ "github.com/lib/pq"
 )
 
 var db *sql.DB
+var sqsClient *sqs.Client
 
 type Order struct {
 	ID         int             `json:"id"`
@@ -56,6 +59,14 @@ func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		log.Fatal("DATABASE_URL is required")
+	}
+
+	if os.Getenv("SQS_QUEUE_URL") != "" {
+		cfg, err := config.LoadDefaultConfig(context.Background())
+		if err != nil {
+			log.Fatalf("failed to load AWS config: %v", err)
+		}
+		sqsClient = sqs.NewFromConfig(cfg)
 	}
 
 	var err error
@@ -313,9 +324,9 @@ func handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get current status
-	var currentStatus string
-	err := db.QueryRow("SELECT status FROM orders WHERE id = $1", req.OrderID).Scan(&currentStatus)
+	// Get current order state
+	var currentStatus, customerID string
+	err := db.QueryRow("SELECT status, customer_id FROM orders WHERE id = $1", req.OrderID).Scan(&currentStatus, &customerID)
 	if err != nil {
 		httpError(w, "order not found", http.StatusNotFound)
 		return
@@ -358,9 +369,10 @@ func handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 	// Publish event
 	publishEvent("order.status_changed", map[string]interface{}{
-		"order_id":   req.OrderID,
-		"old_status": currentStatus,
-		"new_status": req.NewStatus,
+		"order_id":    req.OrderID,
+		"customer_id": customerID,
+		"old_status":  currentStatus,
+		"new_status":  req.NewStatus,
 	})
 
 	w.Header().Set("Content-Type", "application/json")
@@ -384,8 +396,24 @@ func publishEvent(eventType string, payload map[string]interface{}) {
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
 	data, _ := json.Marshal(event)
+	if sqsClient == nil {
+		log.Printf("Event (SQS client unavailable): %s", string(data))
+		return
+	}
+
+	if _, err := sqsClient.SendMessage(context.Background(), &sqs.SendMessageInput{
+		QueueUrl:    &sqsQueue,
+		MessageBody: awsString(string(data)),
+	}); err != nil {
+		log.Printf("Failed to publish event to SQS: %v", err)
+		return
+	}
+
 	log.Printf("Event -> SQS: %s", string(data))
-	// Students implement actual SQS SendMessage here
+}
+
+func awsString(v string) *string {
+	return &v
 }
 
 func httpError(w http.ResponseWriter, msg string, code int) {

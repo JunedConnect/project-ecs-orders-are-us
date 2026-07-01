@@ -14,15 +14,26 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	_ "github.com/lib/pq"
 )
 
 var db *sql.DB
+var sqsClient *sqs.Client
 
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		log.Fatal("DATABASE_URL is required")
+	}
+
+	if os.Getenv("SQS_QUEUE_URL") != "" {
+		cfg, err := config.LoadDefaultConfig(context.Background())
+		if err != nil {
+			log.Fatalf("failed to load AWS config: %v", err)
+		}
+		sqsClient = sqs.NewFromConfig(cfg)
 	}
 
 	var err error
@@ -421,7 +432,24 @@ func publishEvent(eventType string, payload map[string]interface{}) {
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
 	data, _ := json.Marshal(event)
+	if sqsClient == nil {
+		log.Printf("Event (SQS client unavailable): %s", string(data))
+		return
+	}
+
+	if _, err := sqsClient.SendMessage(context.Background(), &sqs.SendMessageInput{
+		QueueUrl:    &sqsQueue,
+		MessageBody: awsString(string(data)),
+	}); err != nil {
+		log.Printf("Failed to publish event to SQS: %v", err)
+		return
+	}
+
 	log.Printf("Event -> SQS: %s", string(data))
+}
+
+func awsString(v string) *string {
+	return &v
 }
 
 func httpError(w http.ResponseWriter, msg string, code int) {

@@ -31,11 +31,15 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
+            - name: debug - list env dir
+              run: |
+                pwd
+
             - name: Login to AWS
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                role-to-assume: ${{ vars.AWS_GITHUB_ROLE_ARN }}
-                role-session-name: github-actions-session
+                role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
+                role-session-name: github-actions-terraform-session
                 aws-region: eu-west-2
   
             - name: Setup Tflint
