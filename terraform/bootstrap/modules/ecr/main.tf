@@ -2,8 +2,13 @@ resource "aws_ecr_repository" "service" {
   for_each = var.ecr_services
 
   name                 = "${var.environment}-${each.value}"
-  image_tag_mutability = "IMMUTABLE"
+  image_tag_mutability = "IMMUTABLE_WITH_EXCLUSION"
   force_delete         = true # this is needed to allow the repository to be deleted without manually removing images first
+
+  image_tag_mutability_exclusion_filter {
+    filter      = "latest"
+    filter_type = "WILDCARD"
+  }
 }
 
 resource "aws_ecr_lifecycle_policy" "service" {
