@@ -80,7 +80,7 @@ Subsequent status changes trigger further automation - shipment creation on `pro
 │       │   └── prod/
 │       └── modules/
 └── .github
-    └── workflows/                 # CI/CD pipelines
+    └── workflows/                     # CI/CD pipelines
 ```
 
 <br>
@@ -140,6 +140,25 @@ All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the
    terraform apply -var-file="prod-bootstrap.tfvars"
    ```
 
+      **Bootstrap apply**
+ 
+```bash
+   cd terraform/bootstrap/environments/prod
+   terraform init
+```
+ 
+   The Route53 hosted zone must exist before Cloudflare can be updated with the delegation nameservers, so target it first:
+ 
+```bash
+   terraform apply -var-file="prod-bootstrap.tfvars" -target=module.domain.aws_route53_zone.this
+```
+ 
+   Then run the full apply:
+ 
+```bash
+   terraform apply -var-file="prod-bootstrap.tfvars"
+```
+
    This creates ECR repositories, the S3 Terraform state bucket for deployment, and delegates the Route53 subdomain from Cloudflare.
 
 <br>
@@ -169,7 +188,7 @@ All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the
    - `cloudwatch_alarm_email_endpoint` - email address subscribed to CloudWatch alarm SNS notifications
    - `*_image` variables - ECR image URIs for each service (e.g. `123456789012.dkr.ecr.eu-west-2.amazonaws.com/prod-api-gateway:latest`)
    - `rds_username` - database username
-   - `aws-tags` - resource tags
+   - `aws_tags` - resource tags
 
 <br>
 
@@ -217,7 +236,7 @@ Similarly, to deploy to the dev environment, choose the  `dev` when carrying out
 
 ## How to Use the App
 
-You can use the web GUI at `https://<route53_domain_name>/dashboard` - it signs in with the built-in default admin account, so you can place orders and explore the dashboard without setting up curl or JWT tokens manually.
+You can use the web GUI at `https://<route53_domain_name>/dashboard`. It signs in with the built-in default admin account, so you can place orders and explore the dashboard without setting up curl or JWT tokens manually.
 
 Alternatively, use the API directly via curl. Replace `<route53_domain_name>` with the value from your deployment tfvars (e.g. `prod.juned.co.uk`).
 
