@@ -88,10 +88,10 @@ Subsequent status changes trigger further automation - shipment creation on `pro
 ## The Opinionated Bits
 
 ### Fargate over EC2-backed ECS
-With Fargate there are no EC2 instances to manage. Each service gets its own isolated compute and you only pay for what it uses. The downside is that you have less control over the actual intrastructure that the ECS tasks are running within, but you have less overhead from a infrastructure management perspective.
+With Fargate there are no EC2 instances to manage. Each service gets its own isolated compute and you only pay for what it uses. The downside is that you have less control over the actual infrastructure that the ECS tasks are running within, but you have less overhead from an infrastructure management perspective.
  
 ### CloudWatch over Prometheus + Grafana
-Prometheus and Grafana are great but they add operational overhead since you're running and maintaining extra infrastructure just to observe your actual infrastructure. for an AWS-native stack, you'd need exporters and additional config with Prometheus + Grafana, to get similar coverage that CloudWatch gives you out of the box. Since everything here is already on AWS, CloudWatch is fully managed, natively integrated with ECS, RDS, ALB, and SQS, and is more straightforward to set up.
+Prometheus and Grafana are great but they add operational overhead since you're running and maintaining extra infrastructure just to observe your actual infrastructure. For an AWS-native stack, you'd need exporters and additional config with Prometheus + Grafana, to get similar coverage that CloudWatch gives you out of the box. Since everything here is already on AWS, CloudWatch is fully managed, natively integrated with ECS, RDS, ALB, and SQS, and is more straightforward to set up.
  
 ### VPC Endpoints over NAT Gateway
 All AWS service traffic (ECR, SQS, Secrets Manager, CloudWatch) stays within the VPC rather than routing through the internet, which removes the need for a NAT Gateway and reduces both cost and attack surface.
