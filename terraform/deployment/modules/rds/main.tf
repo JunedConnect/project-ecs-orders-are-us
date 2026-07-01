@@ -41,11 +41,11 @@ resource "aws_db_instance" "this" {
   password             = random_password.db_password.result
   parameter_group_name = var.parameter_group_name
 
-  allocated_storage    = var.allocated_storage
-  skip_final_snapshot  = var.skip_final_snapshot
+  allocated_storage         = var.allocated_storage
+  skip_final_snapshot       = var.skip_final_snapshot
   final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.environment}-rds-final-snapshot"
-  storage_encrypted    = var.storage_encrypted
-  multi_az             = var.multi_az
+  storage_encrypted         = var.storage_encrypted
+  multi_az                  = var.multi_az
 
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
