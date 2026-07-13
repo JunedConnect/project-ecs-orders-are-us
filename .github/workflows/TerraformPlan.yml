@@ -45,7 +45,7 @@ jobs:
             - name: Setup Tflint
               uses: terraform-linters/setup-tflint@v6
               with: 
-                tflint_version: latest
+                tflint_version: v0.63.1
   
             - name: TFlint Scan   #See this link for command flags https://github.com/terraform-linters/tflint and https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/config.md#format
               run: |
